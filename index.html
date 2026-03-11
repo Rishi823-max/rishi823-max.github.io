@@ -13,7 +13,7 @@
             color: #e5e7eb;
             font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
-            touch-action: none; /* Prevents scrolling while gaming */
+            touch-action: none; 
         }
 
         .game-wrapper {
@@ -24,10 +24,11 @@
             border-radius: 1.5rem;
             overflow: hidden;
             border: 2px solid #1f2937;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .game-wrapper.fullscreen {
+        /* Fullscreen State via Class */
+        .game-wrapper.fullscreen-mode {
             position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
@@ -50,39 +51,13 @@
 
         .tab-btn.active { background-color: #3b82f6; color: white; }
 
-        /* Touch Controls */
-        .touch-ctrl {
-            position: absolute;
-            bottom: 20px;
-            display: none;
-            gap: 20px;
-            width: 100%;
-            padding: 0 30px;
-            justify-content: space-between;
-            pointer-events: none;
+        .ctrl-hint {
+            background: rgba(0,0,0,0.6);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-
-        .d-pad, .action-btns {
-            pointer-events: auto;
-            display: flex;
-            gap: 10px;
-        }
-
-        .ctrl-btn {
-            width: 60px; height: 60px;
-            background: rgba(255,255,255,0.1);
-            backdrop-blur: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-
-        .ctrl-btn:active { background: rgba(59, 130, 246, 0.5); transform: scale(0.9); }
-
-        .tab-btn.active { background-color: #3b82f6; color: white; }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -97,43 +72,37 @@
             <div class="space-x-8 text-sm font-semibold hidden md:flex">
                 <a href="#about" class="text-gray-400 hover:text-white transition-colors">Intro</a>
                 <a href="#projects" class="text-gray-400 hover:text-white transition-colors">Games</a>
-                <a href="#contact" class="text-gray-400 hover:text-white transition-colors">Connect</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <section id="about" class="pt-40 pb-20 px-6 max-w-6xl mx-auto text-center">
-        <h1 class="text-6xl md:text-8xl font-extrabold mb-6 tracking-tighter leading-none">
-            Leveling up the <br>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Player Experience.</span>
+    <section id="about" class="pt-40 pb-10 px-6 max-w-6xl mx-auto text-center">
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tighter leading-none">
+            Competitive <span class="text-blue-500">Playground.</span>
         </h1>
-        <p class="text-gray-400 max-w-2xl mx-auto text-lg mb-10">
-            I'm a game developer focused on high-performance web games and competitive mechanics. 
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+            High-performance browser games built with vanilla JavaScript.
         </p>
     </section>
 
     <!-- Games Section -->
-    <section id="projects" class="py-20 px-6 bg-zinc-900/20 border-y border-white/5">
+    <section id="projects" class="py-10 px-6">
         <div class="max-w-5xl mx-auto">
             
-            <div class="flex items-center justify-between mb-8">
-                <!-- Switcher Tabs -->
-                <div class="flex flex-wrap gap-2 bg-black/40 p-1 rounded-2xl border border-white/5 w-fit">
-                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-bold transition-all">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex gap-2 bg-black/40 p-1 rounded-2xl border border-white/5">
+                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn active px-6 py-2 rounded-xl text-sm font-bold transition-all">
                         Neon Survivor
                     </button>
-                    <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:text-white transition-all">
+                    <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-white transition-all">
                         Rivals 1v1
                     </button>
                 </div>
                 
-                <!-- Fullscreen / Control Toggle Bar -->
-                <div class="flex gap-4">
-                    <button onclick="toggleFullscreen()" class="bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-xl transition-all flex items-center gap-2 text-xs font-bold">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5M.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5m15 0.5a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1 0-1h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-.5.5"/></svg>
-                        FULLSCREEN
-                    </button>
+                <div class="hidden md:flex gap-3 items-center">
+                    <span class="ctrl-hint text-gray-400 font-mono">[ESC] Fullscreen Toggle</span>
+                    <span class="ctrl-hint text-gray-400 font-mono">Arrows/WASD to Move</span>
                 </div>
             </div>
 
@@ -141,82 +110,52 @@
                 <canvas id="gameCanvas"></canvas>
                 
                 <div id="gameUI" class="ui-layer">
+                    <!-- Start Screen -->
                     <div id="startOverlay" class="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center interactable">
                         <div id="gameTitleText" class="text-5xl font-black mb-2 italic">NEON SURVIVOR</div>
-                        <p id="gameDescText" class="text-gray-400 mb-8 font-mono uppercase tracking-widest text-xs">WASD to move • Space to action</p>
-                        <button onclick="initCurrentGame()" class="bg-blue-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform">
+                        <div class="flex gap-4 mb-8">
+                            <span class="ctrl-hint text-blue-400">ARROWS TO MOVE</span>
+                            <span class="ctrl-hint text-blue-400">ESC FOR FULLSCREEN</span>
+                        </div>
+                        <button onclick="initCurrentGame()" class="bg-blue-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:bg-blue-500 transition-colors">
                             START MATCH
                         </button>
                     </div>
 
+                    <!-- HUD -->
                     <div id="hud" class="hidden absolute inset-0">
-                        <!-- Fullscreen HUD bar -->
                         <div class="flex justify-between p-6">
                             <div class="flex gap-4">
-                                <div class="bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur">
+                                <div class="bg-black/60 px-5 py-2 rounded-xl border border-white/10 backdrop-blur">
                                     <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Points</div>
-                                    <div id="stat1Val" class="text-lg font-black">0</div>
+                                    <div id="stat1Val" class="text-xl font-black">0</div>
                                 </div>
-                                <div id="rivalScore" class="hidden bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur">
+                                <div id="rivalScore" class="hidden bg-black/60 px-5 py-2 rounded-xl border border-white/10 backdrop-blur">
                                     <div class="text-[10px] text-red-400 font-bold uppercase">Enemy Score</div>
-                                    <div id="aiWins" class="text-lg font-black text-center">0</div>
+                                    <div id="aiWins" class="text-xl font-black text-center">0</div>
                                 </div>
                             </div>
-                            <div class="bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur text-right">
+                            <div class="bg-black/60 px-5 py-2 rounded-xl border border-white/10 backdrop-blur text-right">
                                 <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Status</div>
-                                <div id="stat2Val" class="text-lg font-black">ACTIVE</div>
+                                <div id="stat2Val" class="text-xl font-black">ACTIVE</div>
                             </div>
                         </div>
 
-                        <!-- On-Screen Controls (Visible on mobile or in HUD) -->
-                        <div id="touchUI" class="touch-ctrl">
-                            <div class="d-pad">
-                                <button class="ctrl-btn" onmousedown="touchMove(0,-1)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(0,-1)" ontouchend="touchMove(0,0)">↑</button>
-                                <div class="flex flex-col gap-10">
-                                    <button class="ctrl-btn" onmousedown="touchMove(-1,0)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(-1,0)" ontouchend="touchMove(0,0)">←</button>
-                                    <button class="ctrl-btn" onmousedown="touchMove(1,0)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(1,0)" ontouchend="touchMove(0,0)">→</button>
-                                </div>
-                                <button class="ctrl-btn" onmousedown="touchMove(0,1)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(0,1)" ontouchend="touchMove(0,0)">↓</button>
+                        <!-- Footer Info -->
+                        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 w-72 text-center">
+                            <div class="h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10 shadow-inner">
+                                <div id="hpFill" class="h-full bg-gradient-to-r from-green-500 to-blue-400 transition-all duration-300" style="width: 100%"></div>
                             </div>
-                            <div class="action-btns">
-                                <button id="actionBtn" class="ctrl-btn w-20 h-20 bg-blue-600/30" onmousedown="keys['Space']=true" onmouseup="keys['Space']=false" ontouchstart="keys['Space']=true" ontouchend="keys['Space']=false">ACT</button>
-                            </div>
-                        </div>
-
-                        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 w-64">
-                            <div class="h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
-                                <div id="hpFill" class="h-full bg-gradient-to-r from-green-500 to-blue-400 transition-all" style="width: 100%"></div>
-                            </div>
-                            <div id="ammoBar" class="mt-3 flex gap-1.5 justify-center h-4"></div>
+                            <div id="ammoBar" class="mt-4 flex gap-2 justify-center h-4"></div>
                         </div>
                     </div>
                 </div>
 
                 <div id="gameModal" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/95 p-10 rounded-3xl border border-white/10 interactable w-80 text-center">
-                    <h2 id="modalTitle" class="text-2xl font-black mb-4">GAME OVER</h2>
+                    <h2 id="modalTitle" class="text-2xl font-black mb-4">MATCH ENDED</h2>
                     <div id="modalContent" class="space-y-4"></div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Skills (Simpler grid) -->
-    <section class="py-20 px-6 max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
-            <h4 class="font-bold text-blue-400 mb-2">Engines</h4>
-            <p class="text-sm text-gray-500">Custom Vanilla JS Canvas</p>
-        </div>
-        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
-            <h4 class="font-bold text-blue-400 mb-2">Input</h4>
-            <p class="text-sm text-gray-500">Keyboard & Touch Support</p>
-        </div>
-        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
-            <h4 class="font-bold text-blue-400 mb-2">Display</h4>
-            <p class="text-sm text-gray-500">Responsive Fullscreen Mode</p>
-        </div>
-        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
-            <h4 class="font-bold text-blue-400 mb-2">AI</h4>
-            <p class="text-sm text-gray-500">Predictive Match Logic</p>
         </div>
     </section>
 
@@ -229,22 +168,27 @@
         const uiModal = document.getElementById('gameModal');
         const hpFill = document.getElementById('hpFill');
         const ammoBar = document.getElementById('ammoBar');
-        const touchUI = document.getElementById('touchUI');
         
         let currentGame = 'neon';
         let gameActive = false;
         let keys = {};
         let frameCount = 0;
-        let touchDir = { x: 0, y: 0 };
+
+        // --- INPUT HANDLING ---
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            // ESC key for Fullscreen Toggle
+            if (e.code === 'Escape') {
+                e.preventDefault();
+                toggleFullscreen();
+            }
+        });
+        window.addEventListener('keyup', e => keys[e.code] = false);
 
         function toggleFullscreen() {
-            container.classList.toggle('fullscreen');
-            setTimeout(resize, 100);
-            if(container.classList.contains('fullscreen')) {
-                touchUI.style.display = 'flex';
-            } else {
-                touchUI.style.display = 'none';
-            }
+            container.classList.toggle('fullscreen-mode');
+            // Small delay to allow CSS transition/reflow before canvas resize
+            setTimeout(resize, 50);
         }
 
         function switchGame(type) {
@@ -255,21 +199,12 @@
             
             if(type === 'neon') {
                 document.getElementById('gameTitleText').innerText = "NEON SURVIVOR";
-                document.getElementById('gameDescText').innerText = "Survive the swarm • WASD to move";
                 document.getElementById('rivalScore').classList.add('hidden');
-                document.getElementById('actionBtn').classList.add('hidden');
             } else {
                 document.getElementById('gameTitleText').innerText = "RIVALS 1v1";
-                document.getElementById('gameDescText').innerText = "Defeat the Rival • SPACE to fire";
                 document.getElementById('rivalScore').classList.remove('hidden');
-                document.getElementById('actionBtn').classList.remove('hidden');
             }
         }
-
-        function touchMove(x, y) { touchDir = { x, y }; }
-
-        window.addEventListener('keydown', e => keys[e.code] = true);
-        window.addEventListener('keyup', e => keys[e.code] = false);
 
         function resize() {
             canvas.width = container.clientWidth;
@@ -278,6 +213,7 @@
         window.addEventListener('resize', resize);
         resize();
 
+        // --- GAME LOGIC ---
         let player, entities, projectiles, particles, score;
 
         function initCurrentGame() {
@@ -288,14 +224,14 @@
             entities = []; projectiles = []; particles = [];
 
             if (currentGame === 'neon') {
-                player = { x: canvas.width/2, y: canvas.height/2, hp: 100, speed: 3.5 };
-                document.getElementById('stat1Label').innerText = "Score";
+                player = { x: canvas.width/2, y: canvas.height/2, hp: 100, speed: 4 };
+                document.getElementById('stat1Label').innerText = "Kills";
                 document.getElementById('stat2Label').innerText = "Mode: Survival";
             } else {
-                player = { x: 100, y: canvas.height/2, hp: 100, speed: 4.5, ammo: 10, maxAmmo: 10, reloading: false, wins: 0 };
-                entities.push({ type: 'ai', x: canvas.width - 100, y: canvas.height/2, hp: 100, speed: 3.2, wins: 0, lastShot: 0 });
-                document.getElementById('stat1Label').innerText = "Your Wins";
-                document.getElementById('stat2Label').innerText = "Mode: 1v1 Arena";
+                player = { x: 100, y: canvas.height/2, hp: 100, speed: 5, ammo: 8, maxAmmo: 8, reloading: false, wins: 0 };
+                entities.push({ type: 'ai', x: canvas.width - 100, y: canvas.height/2, hp: 100, speed: 3.5, wins: 0, lastShot: 0 });
+                document.getElementById('stat1Label').innerText = "Player Score";
+                document.getElementById('stat2Label').innerText = "Match Status";
                 updateAmmoUI();
             }
             requestAnimationFrame(gameLoop);
@@ -306,17 +242,18 @@
             ammoBar.innerHTML = '';
             for(let i=0; i<player.maxAmmo; i++) {
                 const dot = document.createElement('div');
-                dot.className = `w-2 h-full rounded-full ${i < player.ammo ? 'bg-blue-500' : 'bg-gray-800'}`;
+                dot.className = `w-2.5 h-full rounded-full ${i < player.ammo ? 'bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-gray-800'}`;
                 ammoBar.appendChild(dot);
             }
         }
 
         function update() {
-            let mx = touchDir.x, my = touchDir.y;
-            if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
-            if (keys['KeyS'] || keys['ArrowDown']) my += 1;
-            if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
-            if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
+            let mx = 0, my = 0;
+            // Arrow Keys + WASD Support
+            if (keys['ArrowUp'] || keys['KeyW']) my -= 1;
+            if (keys['ArrowDown'] || keys['KeyS']) my += 1;
+            if (keys['ArrowLeft'] || keys['KeyA']) mx -= 1;
+            if (keys['ArrowRight'] || keys['KeyD']) mx += 1;
             
             if (mx !== 0 || my !== 0) {
                 const angle = Math.atan2(my, mx);
@@ -324,47 +261,50 @@
                 player.y += Math.sin(angle) * player.speed;
             }
 
-            player.x = Math.max(20, Math.min(canvas.width-20, player.x));
-            player.y = Math.max(20, Math.min(canvas.height-20, player.y));
+            // Screen boundaries
+            player.x = Math.max(25, Math.min(canvas.width-25, player.x));
+            player.y = Math.max(25, Math.min(canvas.height-25, player.y));
 
             if (currentGame === 'neon') {
-                if (frameCount % 45 === 0) {
+                if (frameCount % 40 === 0) {
                     const side = Math.floor(Math.random()*4);
                     let ex, ey;
-                    if(side === 0) { ex = Math.random()*canvas.width; ey = -20; }
-                    else if(side === 1) { ex = canvas.width+20; ey = Math.random()*canvas.height; }
-                    else if(side === 2) { ex = Math.random()*canvas.width; ey = canvas.height+20; }
-                    else { ex = -20; ey = Math.random()*canvas.height; }
-                    entities.push({ x: ex, y: ey, hp: 20, speed: 1.8 + (score/200) });
+                    if(side === 0) { ex = Math.random()*canvas.width; ey = -30; }
+                    else if(side === 1) { ex = canvas.width+30; ey = Math.random()*canvas.height; }
+                    else if(side === 2) { ex = Math.random()*canvas.width; ey = canvas.height+30; }
+                    else { ex = -30; ey = Math.random()*canvas.height; }
+                    entities.push({ x: ex, y: ey, hp: 20, speed: 2 + (score/150) });
                 }
                 entities.forEach((e, idx) => {
                     const angle = Math.atan2(player.y-e.y, player.x-e.x);
                     e.x += Math.cos(angle) * e.speed;
                     e.y += Math.sin(angle) * e.speed;
-                    if(Math.hypot(player.x-e.x, player.y-e.y) < 25) player.hp -= 0.6;
+                    if(Math.hypot(player.x-e.x, player.y-e.y) < 30) player.hp -= 0.8;
                 });
-                if (frameCount % 25 === 0 && entities.length > 0) {
+                // Automatic turret fire in survival mode
+                if (frameCount % 20 === 0 && entities.length > 0) {
                     let closest = entities[0], minD = 9999;
                     entities.forEach(e => {
                         const d = Math.hypot(player.x-e.x, player.y-e.y);
                         if(d < minD) { minD = d; closest = e; }
                     });
                     const a = Math.atan2(closest.y-player.y, closest.x-player.x);
-                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, owner: 'player' });
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*12, vy: Math.sin(a)*12, owner: 'player' });
                 }
                 document.getElementById('stat1Val').innerText = score;
             } else {
                 const ai = entities[0];
-                ai.y += Math.sin(frameCount/20) * 4;
-                if(Date.now() - ai.lastShot > 1100) {
+                ai.y += Math.sin(frameCount/15) * 5;
+                if(Date.now() - ai.lastShot > 1000) {
                     const a = Math.atan2(player.y-ai.y, player.x-ai.x);
-                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, owner: 'ai' });
+                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*9, vy: Math.sin(a)*9, owner: 'ai' });
                     ai.lastShot = Date.now();
                 }
-                if ((keys['Space'] || keys['Enter']) && player.ammo > 0 && !player.reloading) {
-                    projectiles.push({ x: player.x, y: player.y, vx: 12, vy: 0, owner: 'player' });
+                // Semi-auto firing logic for Rivals
+                if (keys['Space'] && player.ammo > 0 && !player.reloading) {
+                    projectiles.push({ x: player.x, y: player.y, vx: 15, vy: 0, owner: 'player' });
                     player.ammo--;
-                    if(keys['Space']) keys['Space'] = false;
+                    keys['Space'] = false; // Requires key release
                     updateAmmoUI();
                     if(player.ammo === 0) {
                         player.reloading = true;
@@ -374,37 +314,38 @@
                             player.reloading = false; 
                             updateAmmoUI(); 
                             document.getElementById('stat2Val').innerText = "ACTIVE";
-                        }, 1200);
+                        }, 1000);
                     }
                 }
                 document.getElementById('stat1Val').innerText = player.wins;
                 document.getElementById('aiWins').innerText = ai.wins;
             }
 
+            // Projectile collisions
             for(let i=projectiles.length-1; i>=0; i--) {
                 const p = projectiles[i]; p.x += p.vx; p.y += p.vy;
                 if (p.owner === 'player') {
                     if(currentGame === 'neon') {
                         entities.forEach((e, idx) => {
-                            if(Math.hypot(p.x-e.x, p.y-e.y) < 22) {
+                            if(Math.hypot(p.x-e.x, p.y-e.y) < 25) {
                                 e.hp -= 10; p.dead = true;
                                 if(e.hp <= 0) { score++; entities.splice(idx, 1); }
                             }
                         });
                     } else {
                         const ai = entities[0];
-                        if(Math.hypot(p.x-ai.x, p.y-ai.y) < 25) {
+                        if(Math.hypot(p.x-ai.x, p.y-ai.y) < 28) {
                             ai.hp -= 20; p.dead = true;
                             if(ai.hp <= 0) { player.wins++; ai.hp = 100; player.hp = 100; }
                         }
                     }
                 } else if(p.owner === 'ai') {
-                    if(Math.hypot(p.x-player.x, p.y-player.y) < 20) {
+                    if(Math.hypot(p.x-player.x, p.y-player.y) < 22) {
                         player.hp -= 25; p.dead = true;
                         if(player.hp <= 0) { entities[0].wins++; player.hp = 100; }
                     }
                 }
-                if(p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height || p.dead) projectiles.splice(i, 1);
+                if(p.x < -50 || p.x > canvas.width + 50 || p.y < -50 || p.y > canvas.height + 50 || p.dead) projectiles.splice(i, 1);
             }
 
             hpFill.style.width = player.hp + '%';
@@ -416,30 +357,38 @@
             ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            ctx.strokeStyle = '#111';
-            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
-            for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+            // Grid lines
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
 
+            // Entities
             entities.forEach(e => {
                 ctx.fillStyle = currentGame === 'rivals' ? '#f43f5e' : '#3b82f6';
-                ctx.beginPath(); ctx.arc(e.x, e.y, 18, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(e.x, e.y, 20, 0, Math.PI*2); ctx.fill();
             });
 
+            // Projectiles
             projectiles.forEach(p => {
                 ctx.fillStyle = p.owner === 'player' ? '#60a5fa' : '#ffffff';
-                ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
             });
 
+            // Player with glow
             ctx.fillStyle = '#ffffff';
-            ctx.shadowBlur = 15; ctx.shadowColor = '#3b82f6';
-            ctx.beginPath(); ctx.arc(player.x, player.y, 16, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
+            ctx.beginPath(); ctx.arc(player.x, player.y, 18, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
         }
 
         function gameOver() {
             gameActive = false;
             uiModal.classList.remove('hidden');
-            document.getElementById('modalContent').innerHTML = `<button onclick="location.reload()" class="bg-blue-600 w-full p-4 rounded-2xl font-bold">RESTART</button>`;
+            document.getElementById('modalContent').innerHTML = `
+                <p class="text-gray-400 mb-6">Score: ${score}</p>
+                <button onclick="location.reload()" class="bg-blue-600 w-full p-4 rounded-2xl font-bold hover:bg-blue-500">PLAY AGAIN</button>
+            `;
         }
 
         function gameLoop() {
@@ -450,3 +399,4 @@
     </script>
 </body>
 </html>
+               
