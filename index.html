@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-html lang="en">
+
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -51,6 +52,7 @@ html lang="en">
         }
 
         .interactable { pointer-events: auto; }
+        .tab-btn { color: #6b7280; font-weight: 700; transition: all 0.2s; }
         .tab-btn.active { background-color: #3b82f6; color: white; }
         .ctrl-hint {
             background: rgba(0,0,0,0.6);
@@ -60,25 +62,25 @@ html lang="en">
             border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Neon Dropper Specific Menu Styles */
+        /* Menu Styles */
         .menu {
             position: absolute;
             background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #0ff;
+            border: 2px solid #3b82f6;
             padding: 1.5rem;
             text-align: center;
             border-radius: 1rem;
             pointer-events: auto;
-            color: #0ff;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            color: white;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
             width: 340px;
             max-width: 90%;
             z-index: 50;
         }
         .hidden { display: none; }
-        .btn-neon {
-            background: #0ff;
-            color: #000;
+        .btn-action {
+            background: #3b82f6;
+            color: white;
             padding: 0.6rem 1.2rem;
             border-radius: 0.5rem;
             font-weight: bold;
@@ -88,18 +90,7 @@ html lang="en">
             text-transform: uppercase;
             border: none;
         }
-        .btn-neon:hover { background: #fff; box-shadow: 0 0 20px #0ff; transform: scale(1.05); }
-        .shop-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.6rem;
-            margin-bottom: 0.4rem;
-            border-radius: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-        }
-        .scroll-area { max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .btn-action:hover { background: #60a5fa; transform: scale(1.05); }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -108,7 +99,8 @@ html lang="en">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <span class="text-xl font-bold tracking-tighter text-white">ARCADE.DEV</span>
             <div class="hidden md:flex gap-3">
-                <span class="ctrl-hint text-gray-400 font-mono">[ESC] Fullscreen Toggle</span>
+                <span class="ctrl-hint text-gray-400 font-mono">[ESC] Fullscreen</span>
+                <span class="ctrl-hint text-gray-400 font-mono">Arrows to Move</span>
             </div>
         </div>
     </nav>
@@ -118,62 +110,48 @@ html lang="en">
             
             <div class="flex items-center justify-between mb-6">
                 <div class="flex gap-2 bg-black/40 p-1 rounded-2xl border border-white/5">
-                    <button id="btnDropper" onclick="switchGame('dropper')" class="tab-btn active px-6 py-2 rounded-xl text-sm font-bold transition-all">
-                        Neon Dropper
-                    </button>
-                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn px-6 py-2 rounded-xl text-sm font-bold text-gray-500 hover:text-white transition-all">
-                        Neon Survivor
-                    </button>
+                    <button id="btnDropper" onclick="switchGame('dropper')" class="tab-btn active px-6 py-2 rounded-xl text-sm">Neon Dropper</button>
+                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn px-6 py-2 rounded-xl text-sm">Neon Survivor</button>
+                    <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2 rounded-xl text-sm">Rivals 1v1</button>
                 </div>
             </div>
 
             <div id="gameContainer" class="game-wrapper shadow-2xl shadow-blue-500/10">
                 <canvas id="gameCanvas"></canvas>
                 
-                <!-- Dropper Specific UI -->
-                <div id="dropperUI" class="ui-layer">
-                    <div id="dropperStats" class="absolute top-5 w-full flex flex-col items-center hidden">
-                        <div id="high-score-display" class="text-3xl font-black text-cyan-400">HIGH: 0</div>
-                        <div id="score-display" class="text-sm font-bold opacity-70">SCORE: 0</div>
-                        <div id="wallet-display" class="text-[10px] text-gray-500">Coins: 0</div>
+                <div id="gameUI" class="ui-layer">
+                    <!-- Dynamic HUD -->
+                    <div id="hud" class="hidden absolute inset-0 p-6 flex justify-between items-start">
+                        <div class="flex gap-4">
+                            <div class="bg-black/60 px-4 py-2 rounded-lg border border-white/10">
+                                <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Score</div>
+                                <div id="stat1Val" class="text-xl font-black">0</div>
+                            </div>
+                            <div id="rivalScoreBox" class="hidden bg-black/60 px-4 py-2 rounded-lg border border-white/10">
+                                <div class="text-[10px] text-red-400 font-bold uppercase">Enemy</div>
+                                <div id="statEnemyVal" class="text-xl font-black">0</div>
+                            </div>
+                        </div>
+                        <div id="ammoBox" class="hidden bg-black/60 px-4 py-2 rounded-lg border border-white/10">
+                            <div class="text-[10px] text-purple-400 font-bold uppercase">Ammo</div>
+                            <div id="ammoVal" class="text-xl font-black">8</div>
+                        </div>
                     </div>
 
-                    <!-- Dropper Menus -->
+                    <!-- Start Menu -->
                     <div id="start-menu" class="menu">
-                        <h1 class="text-2xl font-bold mb-4">NEON DROPPER EXTREME</h1>
-                        <button class="btn-neon w-full" onclick="startDropper()">START DESCENT</button>
-                        <div class="flex gap-2 mt-2">
-                            <button class="btn-neon flex-1 text-xs" onclick="toggleShop(true)">Shop</button>
-                            <button class="btn-neon flex-1 text-xs" onclick="toggleSkins(true)">Skins</button>
-                        </div>
+                        <h1 id="menuTitle" class="text-2xl font-black mb-2 uppercase">Neon Dropper</h1>
+                        <p id="menuDesc" class="text-[10px] opacity-60 mb-6 uppercase tracking-widest">Ultra-fast Descent</p>
+                        <button class="btn-action w-full" onclick="initCurrentGame()">Start Match</button>
                     </div>
 
-                    <div id="shop-menu" class="menu hidden">
-                        <h2 class="text-xl font-bold mb-4">EQUIPMENT</h2>
-                        <div class="scroll-area text-left text-xs">
-                            <div class="shop-item"><span>REVIVE (60c)</span><button onclick="purchase('revive', 60)" class="btn-neon text-[10px]">BUY</button></div>
-                            <div class="shop-item"><span>COIN MAGNET (300c)</span><button id="buy-magnet" onclick="purchaseUpgrade('magnet', 300)" class="btn-neon text-[10px]">BUY</button></div>
-                        </div>
-                        <button class="btn-neon w-full mt-4" onclick="toggleShop(false)">EXIT</button>
-                    </div>
-
-                    <div id="skins-menu" class="menu hidden">
-                        <h2 class="text-xl font-bold mb-4 text-purple-400">SKINS</h2>
-                        <div class="scroll-area text-left text-xs">
-                            <div class="shop-item"><span>ZENITH (40c)</span><button id="skin-btn-zenith" onclick="purchaseSkin('zenith', 40)" class="btn-neon text-[10px]">BUY</button></div>
-                            <div class="shop-item"><span>GLITCH (320c)</span><button id="skin-btn-glitch" onclick="purchaseSkin('glitch', 320)" class="btn-neon text-[10px]">BUY</button></div>
-                        </div>
-                        <button class="btn-neon w-full mt-4" onclick="toggleSkins(false)">BACK</button>
-                    </div>
-                    
+                    <!-- Death Menu -->
                     <div id="death-menu" class="menu hidden">
-                        <h2 class="text-2xl font-bold text-red-500 mb-2">SYSTEM FAILURE</h2>
-                        <p class="text-lg mb-4">Score: <span id="final-score">0</span></p>
-                        <button class="btn-neon w-full" onclick="startDropper()">REBOOT</button>
+                        <h2 class="text-2xl font-bold text-red-500 mb-2">MATCH ENDED</h2>
+                        <p class="text-lg mb-6">Final Score: <span id="finalScore">0</span></p>
+                        <button class="btn-action w-full" onclick="initCurrentGame()">Play Again</button>
                     </div>
                 </div>
-
-                <!-- Shared UI Logic for Survivor (Omitted for brevity but functional in code) -->
             </div>
         </div>
     </section>
@@ -182,21 +160,29 @@ html lang="en">
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('gameContainer');
-        
+        const startMenu = document.getElementById('start-menu');
+        const deathMenu = document.getElementById('death-menu');
+        const hud = document.getElementById('hud');
+
         let currentGame = 'dropper';
         let gameActive = false;
         let keys = {};
+        let frameCount = 0;
 
-        // --- GLOBAL INPUTS ---
+        // Shared game variables
+        let player, entities, projectiles, cameraY, speed, score, enemyScore;
+
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
             if (e.code === 'Escape') toggleFullscreen();
-            if (currentGame === 'dropper' && (e.code === 'Space' || e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-                handleDropperAction();
+            if (currentGame === 'dropper' && gameActive && (e.code === 'Space' || e.code.includes('Arrow'))) {
+                player.dir *= -1;
             }
         });
         window.addEventListener('keyup', e => keys[e.code] = false);
-        window.addEventListener('mousedown', () => { if(currentGame === 'dropper') handleDropperAction(); });
+        window.addEventListener('mousedown', () => {
+            if(currentGame === 'dropper' && gameActive) player.dir *= -1;
+        });
 
         function toggleFullscreen() {
             container.classList.toggle('fullscreen-mode');
@@ -204,8 +190,9 @@ html lang="en">
         }
 
         function resize() {
+            // Neon Dropper window is now bigger (80% of container or 600px max)
             if (currentGame === 'dropper') {
-                canvas.width = Math.min(container.clientWidth, 500);
+                canvas.width = Math.min(container.clientWidth * 0.8, 600);
             } else {
                 canvas.width = container.clientWidth;
             }
@@ -215,108 +202,189 @@ html lang="en">
         resize();
 
         function switchGame(type) {
-            location.reload(); // Simplest way to clear state
-        }
-
-        // --- NEON DROPPER LOGIC ---
-        let score = 0, coins = parseInt(localStorage.getItem('ndCoins')) || 0;
-        let highScore = parseInt(localStorage.getItem('ndHigh')) || 0;
-        let speed = 3.0, cameraY = 0, obstacles = [], items = [], particles = [];
-        let player = { x: 0, y: 150, dir: 1, trail: [] };
-        let upgrades = JSON.parse(localStorage.getItem('ndUpgrades')) || { magnet: false };
-        let skins = JSON.parse(localStorage.getItem('ndSkins')) || { default: true };
-        let currentSkin = localStorage.getItem('ndSkin') || 'default';
-
-        function startDropper() {
-            document.getElementById('start-menu').classList.add('hidden');
-            document.getElementById('death-menu').classList.add('hidden');
-            document.getElementById('dropperStats').classList.remove('hidden');
-            gameActive = true;
-            score = 0; speed = 3.0; obstacles = []; items = [];
-            player.x = canvas.width/2; player.y = 150;
-            requestAnimationFrame(dropperLoop);
-        }
-
-        function handleDropperAction() {
-            if (currentGame === 'dropper' && gameActive) player.dir *= -1;
-        }
-
-        function dropperLoop() {
-            if (!gameActive || currentGame !== 'dropper') return;
+            currentGame = type;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add('active');
             
-            // Update
-            speed += 0.001;
-            player.x += player.dir * 5.8;
-            player.y += speed;
-            cameraY = player.y - 150;
+            const titles = { dropper: "Neon Dropper", neon: "Neon Survivor", rivals: "Rivals 1v1" };
+            const descs = { dropper: "Ultra-fast Descent", neon: "Horde Survival", rivals: "Tactical Combat" };
+            
+            document.getElementById('menuTitle').innerText = titles[type];
+            document.getElementById('menuDesc').innerText = descs[type];
+            
+            startMenu.classList.remove('hidden');
+            deathMenu.classList.add('hidden');
+            hud.classList.add('hidden');
+            gameActive = false;
+            resize();
+        }
 
-            // Wall Collisions
-            if (player.x < 15 || player.x > canvas.width - 15) endDropper();
+        function initCurrentGame() {
+            startMenu.classList.add('hidden');
+            deathMenu.classList.add('hidden');
+            hud.classList.remove('hidden');
+            gameActive = true;
+            frameCount = 0;
+            score = 0;
+            enemyScore = 0;
+            entities = [];
+            projectiles = [];
 
-            // Obstacle Gen
-            if (obstacles.length < 5) {
-                const y = obstacles.length === 0 ? player.y + 400 : obstacles[obstacles.length-1].y + 280;
-                const gap = 120 - (speed * 2);
-                const cx = 50 + Math.random() * (canvas.width - 100);
-                obstacles.push({ y, cx, gap });
+            // UI Reset
+            document.getElementById('rivalScoreBox').classList.add('hidden');
+            document.getElementById('ammoBox').classList.add('hidden');
+            document.getElementById('stat1Label').innerText = "Score";
+
+            if (currentGame === 'dropper') {
+                player = { x: canvas.width/2, y: 150, dir: 1 };
+                speed = 3.0;
+                cameraY = 0;
+            } else if (currentGame === 'neon') {
+                player = { x: canvas.width/2, y: canvas.height/2, hp: 100, speed: 4 };
+                document.getElementById('stat1Label').innerText = "Kills";
+            } else if (currentGame === 'rivals') {
+                player = { x: 100, y: canvas.height/2, hp: 100, ammo: 8, maxAmmo: 8 };
+                entities.push({ x: canvas.width-100, y: canvas.height/2, hp: 100, lastShot: 0 });
+                document.getElementById('rivalScoreBox').classList.remove('hidden');
+                document.getElementById('ammoBox').classList.remove('hidden');
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            if (currentGame === 'dropper') {
+                speed += 0.001;
+                player.x += player.dir * (5.5 + speed/5);
+                player.y += speed;
+                cameraY = player.y - 150;
+                if (player.x < 15 || player.x > canvas.width - 15) endGame();
+
+                if (entities.length < 6) {
+                    const y = entities.length === 0 ? player.y + 400 : entities[entities.length-1].y + 250;
+                    const gap = Math.max(90, 160 - (speed * 3));
+                    const cx = 80 + Math.random() * (canvas.width - 160);
+                    entities.push({ y, cx, gap });
+                }
+                entities.forEach((o, i) => {
+                    if (Math.abs(player.y - o.y) < 15) {
+                        if (player.x < o.cx - o.gap/2 || player.x > o.cx + o.gap/2) endGame();
+                    }
+                    if (o.y < player.y - 300) entities.splice(i, 1);
+                });
+                score = Math.floor(player.y / 10);
+
+            } else if (currentGame === 'neon') {
+                let mx = 0, my = 0;
+                if(keys['ArrowUp'] || keys['KeyW']) my--;
+                if(keys['ArrowDown'] || keys['KeyS']) my++;
+                if(keys['ArrowLeft'] || keys['KeyA']) mx--;
+                if(keys['ArrowRight'] || keys['KeyD']) mx++;
+                if(mx || my) {
+                    const a = Math.atan2(my, mx);
+                    player.x += Math.cos(a) * player.speed;
+                    player.y += Math.sin(a) * player.speed;
+                }
+                player.x = Math.max(20, Math.min(canvas.width-20, player.x));
+                player.y = Math.max(20, Math.min(canvas.height-20, player.y));
+
+                if(frameCount % 45 === 0) {
+                    entities.push({ x: Math.random()*canvas.width, y: -20, hp: 10 });
+                }
+                entities.forEach((e, i) => {
+                    const a = Math.atan2(player.y-e.y, player.x-e.x);
+                    e.x += Math.cos(a) * 2; e.y += Math.sin(a) * 2;
+                    if(Math.hypot(player.x-e.x, player.y-e.y) < 25) endGame();
+                });
+                if(frameCount % 20 === 0 && entities.length > 0) {
+                    const a = Math.atan2(entities[0].y-player.y, entities[0].x-player.x);
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, owner: 'p' });
+                }
+                projectiles.forEach((p, pi) => {
+                    p.x += p.vx; p.y += p.vy;
+                    entities.forEach((e, ei) => {
+                        if(Math.hypot(p.x-e.x, p.y-e.y) < 20) {
+                            score++; entities.splice(ei, 1); p.dead = true;
+                        }
+                    });
+                });
+
+            } else if (currentGame === 'rivals') {
+                if(keys['ArrowUp']) player.y -= 5;
+                if(keys['ArrowDown']) player.y += 5;
+                player.y = Math.max(30, Math.min(canvas.height-30, player.y));
+                
+                const ai = entities[0];
+                ai.y += Math.sin(frameCount/20) * 4;
+
+                if(keys['Space'] && player.ammo > 0) {
+                    projectiles.push({ x: player.x, y: player.y, vx: 12, vy: 0, owner: 'p' });
+                    player.ammo--; keys['Space'] = false;
+                    if(player.ammo === 0) setTimeout(() => player.ammo = 8, 1000);
+                }
+                if(frameCount % 60 === 0) {
+                    const a = Math.atan2(player.y-ai.y, player.x-ai.x);
+                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, owner: 'e' });
+                }
+                projectiles.forEach((p, i) => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.owner === 'p' && Math.hypot(p.x-ai.x, p.y-ai.y) < 30) { score++; p.dead = true; }
+                    if(p.owner === 'e' && Math.hypot(p.x-player.x, p.y-player.y) < 25) { enemyScore++; p.dead = true; }
+                    if(score >= 10 || enemyScore >= 10) endGame();
+                });
+                document.getElementById('ammoVal').innerText = player.ammo;
+                document.getElementById('statEnemyVal').innerText = enemyScore;
             }
 
-            // Collisions
-            obstacles.forEach((o, i) => {
-                if (Math.abs(player.y - o.y) < 15) {
-                    if (player.x < o.cx - o.gap/2 || player.x > o.cx + o.gap/2) endDropper();
-                }
-                if (o.y < player.y - 200) obstacles.splice(i, 1);
-            });
+            projectiles = projectiles.filter(p => !p.dead && p.x > -50 && p.x < canvas.width+50);
+            document.getElementById('stat1Val').innerText = score;
+            frameCount++;
+        }
 
-            score = Math.floor(player.y / 10);
-            document.getElementById('score-display').innerText = "SCORE: " + score;
-
-            // Draw
+        function draw() {
             ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.save();
-            ctx.translate(0, -cameraY);
 
-            // Walls
-            ctx.fillStyle = '#111';
-            ctx.fillRect(0, cameraY, 15, canvas.height);
-            ctx.fillRect(canvas.width - 15, cameraY, 15, canvas.height);
-
-            // Obstacles
-            ctx.fillStyle = '#f00';
-            obstacles.forEach(o => {
-                ctx.fillRect(15, o.y - 10, o.cx - o.gap/2 - 15, 20);
-                ctx.fillRect(o.cx + o.gap/2, o.y - 10, canvas.width - (o.cx + o.gap/2) - 15, 20);
-            });
-
-            // Player
-            ctx.fillStyle = '#0ff';
-            ctx.shadowBlur = 15; ctx.shadowColor = '#0ff';
-            ctx.beginPath(); ctx.arc(player.x, player.y, 10, 0, Math.PI*2); ctx.fill();
-            ctx.restore();
-
-            requestAnimationFrame(dropperLoop);
-        }
-
-        function endDropper() {
-            gameActive = false;
-            document.getElementById('death-menu').classList.remove('hidden');
-            document.getElementById('final-score').innerText = score;
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('ndHigh', highScore);
+            if (currentGame === 'dropper') {
+                ctx.save();
+                ctx.translate(0, -cameraY);
+                ctx.fillStyle = '#111';
+                ctx.fillRect(0, cameraY, 15, canvas.height);
+                ctx.fillRect(canvas.width-15, cameraY, 15, canvas.height);
+                ctx.fillStyle = '#f00';
+                entities.forEach(o => {
+                    ctx.fillRect(15, o.y-10, o.cx-o.gap/2-15, 20);
+                    ctx.fillRect(o.cx+o.gap/2, o.y-10, canvas.width-(o.cx+o.gap/2)-15, 20);
+                });
+                ctx.fillStyle = '#0ff';
+                ctx.shadowBlur = 15; ctx.shadowColor = '#0ff';
+                ctx.beginPath(); ctx.arc(player.x, player.y, 10, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(player.x, player.y, 18, 0, Math.PI*2); ctx.fill();
+                entities.forEach(e => {
+                    ctx.fillStyle = (currentGame === 'rivals') ? '#f43f5e' : '#3b82f6';
+                    ctx.beginPath(); ctx.arc(e.x, e.y, 22, 0, Math.PI*2); ctx.fill();
+                });
+                projectiles.forEach(p => {
+                    ctx.fillStyle = p.owner === 'p' ? '#3b82f6' : '#fff';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+                });
             }
         }
 
-        // Simple Shop placeholders
-        function toggleShop(s) { document.getElementById('shop-menu').classList.toggle('hidden', !s); }
-        function toggleSkins(s) { document.getElementById('skins-menu').classList.toggle('hidden', !s); }
-        
-        // Initial setup
-        resize();
-        document.getElementById('high-score-display').innerText = "HIGH: " + highScore;
+        function endGame() {
+            gameActive = false;
+            deathMenu.classList.remove('hidden');
+            document.getElementById('finalScore').innerText = score;
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            update(); draw();
+            requestAnimationFrame(gameLoop);
+        }
     </script>
 </body>
 </html>
