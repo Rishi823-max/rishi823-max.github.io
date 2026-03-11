@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dev Portfolio | Game Showcase</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,10 +13,8 @@
             color: #e5e7eb;
             font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
+            touch-action: none; /* Prevents scrolling while gaming */
         }
-
-        .neon-blue { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
-        .neon-purple { text-shadow: 0 0 10px rgba(168, 85, 247, 0.5); }
 
         .game-wrapper {
             position: relative;
@@ -26,12 +24,19 @@
             border-radius: 1.5rem;
             overflow: hidden;
             border: 2px solid #1f2937;
+            transition: all 0.3s ease;
         }
 
-        canvas {
-            display: block;
-            image-rendering: auto;
+        .game-wrapper.fullscreen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9999;
+            border-radius: 0;
+            border: none;
         }
+
+        canvas { display: block; image-rendering: auto; }
 
         .ui-layer {
             position: absolute;
@@ -43,19 +48,41 @@
 
         .interactable { pointer-events: auto; }
 
-        .tab-btn.active {
-            background-color: #3b82f6;
-            color: white;
+        .tab-btn.active { background-color: #3b82f6; color: white; }
+
+        /* Touch Controls */
+        .touch-ctrl {
+            position: absolute;
+            bottom: 20px;
+            display: none;
+            gap: 20px;
+            width: 100%;
+            padding: 0 30px;
+            justify-content: space-between;
+            pointer-events: none;
         }
 
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        .d-pad, .action-btns {
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
         }
 
-        .vignette {
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        .ctrl-btn {
+            width: 60px; height: 60px;
+            background: rgba(255,255,255,0.1);
+            backdrop-blur: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
         }
+
+        .ctrl-btn:active { background: rgba(59, 130, 246, 0.5); transform: scale(0.9); }
+
+        .tab-btn.active { background-color: #3b82f6; color: white; }
     </style>
 </head>
 <body class="overflow-x-hidden">
@@ -83,189 +110,194 @@
         </h1>
         <p class="text-gray-400 max-w-2xl mx-auto text-lg mb-10">
             I'm a game developer focused on high-performance web games and competitive mechanics. 
-            Check out my latest builds below.
         </p>
     </section>
 
-    <!-- Projects / Games Section -->
+    <!-- Games Section -->
     <section id="projects" class="py-20 px-6 bg-zinc-900/20 border-y border-white/5">
         <div class="max-w-5xl mx-auto">
             
-            <!-- Switcher Tabs -->
-            <div class="flex flex-wrap gap-2 mb-8 bg-black/40 p-1 rounded-2xl border border-white/5 w-fit">
-                <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-bold transition-all">
-                    Neon Survivor (v2.0)
-                </button>
-                <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:text-white transition-all">
-                    Rivals 1v1 Arena
-                </button>
+            <div class="flex items-center justify-between mb-8">
+                <!-- Switcher Tabs -->
+                <div class="flex flex-wrap gap-2 bg-black/40 p-1 rounded-2xl border border-white/5 w-fit">
+                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-bold transition-all">
+                        Neon Survivor
+                    </button>
+                    <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:text-white transition-all">
+                        Rivals 1v1
+                    </button>
+                </div>
+                
+                <!-- Fullscreen / Control Toggle Bar -->
+                <div class="flex gap-4">
+                    <button onclick="toggleFullscreen()" class="bg-white/5 hover:bg-white/10 border border-white/10 p-2.5 rounded-xl transition-all flex items-center gap-2 text-xs font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5M.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5m15 0.5a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1 0-1h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-.5.5"/></svg>
+                        FULLSCREEN
+                    </button>
+                </div>
             </div>
 
-            <!-- Game Display -->
-            <div class="game-wrapper shadow-2xl shadow-blue-500/10">
+            <div id="gameContainer" class="game-wrapper shadow-2xl shadow-blue-500/10">
                 <canvas id="gameCanvas"></canvas>
                 
                 <div id="gameUI" class="ui-layer">
-                    <!-- Dynamic UI will be handled by JS -->
                     <div id="startOverlay" class="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center interactable">
                         <div id="gameTitleText" class="text-5xl font-black mb-2 italic">NEON SURVIVOR</div>
-                        <p id="gameDescText" class="text-gray-400 mb-8 font-mono uppercase tracking-widest text-xs">WASD to move • Competitive Logic Enabled</p>
-                        <button onclick="initCurrentGame()" class="bg-white text-black px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform active:scale-95">
+                        <p id="gameDescText" class="text-gray-400 mb-8 font-mono uppercase tracking-widest text-xs">WASD to move • Space to action</p>
+                        <button onclick="initCurrentGame()" class="bg-blue-600 text-white px-12 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform">
                             START MATCH
                         </button>
                     </div>
 
-                    <!-- HUD (Hidden by default) -->
                     <div id="hud" class="hidden absolute inset-0">
-                        <!-- Top Stats -->
+                        <!-- Fullscreen HUD bar -->
                         <div class="flex justify-between p-6">
-                            <div class="bg-black/50 p-3 rounded-xl border border-white/10 backdrop-blur">
-                                <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Points</div>
-                                <div id="stat1Val" class="text-xl font-black">0</div>
+                            <div class="flex gap-4">
+                                <div class="bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur">
+                                    <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Points</div>
+                                    <div id="stat1Val" class="text-lg font-black">0</div>
+                                </div>
+                                <div id="rivalScore" class="hidden bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur">
+                                    <div class="text-[10px] text-red-400 font-bold uppercase">Enemy Score</div>
+                                    <div id="aiWins" class="text-lg font-black text-center">0</div>
+                                </div>
                             </div>
-                            <div class="bg-black/50 p-3 rounded-xl border border-white/10 backdrop-blur text-right">
-                                <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Time</div>
-                                <div id="stat2Val" class="text-xl font-black">00:00</div>
+                            <div class="bg-black/50 px-4 py-2 rounded-xl border border-white/10 backdrop-blur text-right">
+                                <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Status</div>
+                                <div id="stat2Val" class="text-lg font-black">ACTIVE</div>
                             </div>
                         </div>
 
-                        <!-- Player Info (Bottom) -->
-                        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-64">
-                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden border border-white/10">
-                                <div id="hpFill" class="h-full bg-gradient-to-r from-green-500 to-emerald-400 transition-all" style="width: 100%"></div>
+                        <!-- On-Screen Controls (Visible on mobile or in HUD) -->
+                        <div id="touchUI" class="touch-ctrl">
+                            <div class="d-pad">
+                                <button class="ctrl-btn" onmousedown="touchMove(0,-1)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(0,-1)" ontouchend="touchMove(0,0)">↑</button>
+                                <div class="flex flex-col gap-10">
+                                    <button class="ctrl-btn" onmousedown="touchMove(-1,0)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(-1,0)" ontouchend="touchMove(0,0)">←</button>
+                                    <button class="ctrl-btn" onmousedown="touchMove(1,0)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(1,0)" ontouchend="touchMove(0,0)">→</button>
+                                </div>
+                                <button class="ctrl-btn" onmousedown="touchMove(0,1)" onmouseup="touchMove(0,0)" ontouchstart="touchMove(0,1)" ontouchend="touchMove(0,0)">↓</button>
                             </div>
-                            <div id="ammoBar" class="mt-2 flex gap-1 justify-center"></div>
+                            <div class="action-btns">
+                                <button id="actionBtn" class="ctrl-btn w-20 h-20 bg-blue-600/30" onmousedown="keys['Space']=true" onmouseup="keys['Space']=false" ontouchstart="keys['Space']=true" ontouchend="keys['Space']=false">ACT</button>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 w-64">
+                            <div class="h-2.5 bg-gray-800 rounded-full overflow-hidden border border-white/10">
+                                <div id="hpFill" class="h-full bg-gradient-to-r from-green-500 to-blue-400 transition-all" style="width: 100%"></div>
+                            </div>
+                            <div id="ammoBar" class="mt-3 flex gap-1.5 justify-center h-4"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Level Up / Menu Modals -->
-                <div id="gameModal" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/95 p-8 rounded-3xl border border-white/10 interactable w-80 text-center">
-                    <h2 id="modalTitle" class="text-2xl font-black mb-4">LEVEL UP</h2>
-                    <div id="modalContent" class="space-y-3"></div>
-                </div>
-            </div>
-
-            <!-- Tech Details -->
-            <div class="mt-12 grid md:grid-cols-2 gap-12">
-                <div>
-                    <h3 class="text-2xl font-bold mb-4">Competitive Mechanics</h3>
-                    <p class="text-gray-400 leading-relaxed">
-                        In <span class="text-white font-semibold">Rivals 1v1</span>, I implemented a custom state-machine for the AI 
-                        that mimics player behavior including strafing, aiming prediction, and health-pack prioritization. 
-                        The movement system uses sub-pixel smoothing for a "AAA" feel.
-                    </p>
-                </div>
-                <div>
-                    <h3 class="text-2xl font-bold mb-4">Advanced Rendering</h3>
-                    <p class="text-gray-400 leading-relaxed">
-                        I use a layered canvas approach to render dynamic lighting and particle systems without 
-                        impacting the main logic thread, ensuring high frame rates even on lower-end devices.
-                    </p>
+                <div id="gameModal" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/95 p-10 rounded-3xl border border-white/10 interactable w-80 text-center">
+                    <h2 id="modalTitle" class="text-2xl font-black mb-4">GAME OVER</h2>
+                    <div id="modalContent" class="space-y-4"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Skills -->
-    <section id="skills" class="py-20 px-6 max-w-6xl mx-auto">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-zinc-900 p-8 rounded-3xl border border-white/5 text-center">
-                <div class="text-blue-500 font-black text-3xl mb-1">90+</div>
-                <div class="text-xs text-gray-500 uppercase font-bold tracking-widest">FPS Optimized</div>
-            </div>
-            <div class="bg-zinc-900 p-8 rounded-3xl border border-white/5 text-center">
-                <div class="text-purple-500 font-black text-3xl mb-1">AI</div>
-                <div class="text-xs text-gray-500 uppercase font-bold tracking-widest">Logic Systems</div>
-            </div>
-            <div class="bg-zinc-900 p-8 rounded-3xl border border-white/5 text-center">
-                <div class="text-blue-500 font-black text-3xl mb-1">JS</div>
-                <div class="text-xs text-gray-500 uppercase font-bold tracking-widest">Canvas Expert</div>
-            </div>
-            <div class="bg-zinc-900 p-8 rounded-3xl border border-white/5 text-center">
-                <div class="text-purple-500 font-black text-3xl mb-1">UI</div>
-                <div class="text-xs text-gray-500 uppercase font-bold tracking-widest">Game Design</div>
-            </div>
+    <!-- Skills (Simpler grid) -->
+    <section class="py-20 px-6 max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
+            <h4 class="font-bold text-blue-400 mb-2">Engines</h4>
+            <p class="text-sm text-gray-500">Custom Vanilla JS Canvas</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
+            <h4 class="font-bold text-blue-400 mb-2">Input</h4>
+            <p class="text-sm text-gray-500">Keyboard & Touch Support</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
+            <h4 class="font-bold text-blue-400 mb-2">Display</h4>
+            <p class="text-sm text-gray-500">Responsive Fullscreen Mode</p>
+        </div>
+        <div class="p-6 rounded-2xl bg-zinc-900 border border-white/5">
+            <h4 class="font-bold text-blue-400 mb-2">AI</h4>
+            <p class="text-sm text-gray-500">Predictive Match Logic</p>
         </div>
     </section>
-
-    <!-- Contact -->
-    <section id="contact" class="py-20 px-6 text-center max-w-3xl mx-auto">
-        <h2 class="text-4xl font-black mb-6">Want to collaborate?</h2>
-        <p class="text-gray-400 mb-8">I'm always looking to build more polished web games and competitive experiences.</p>
-        <a href="mailto:dev@arcade.com" class="bg-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-500 transition-colors inline-block">Say Hello</a>
-    </section>
-
-    <footer class="py-12 text-center text-gray-600 text-sm border-t border-white/5">
-        &copy; 2024 Arcade Portfolio. Stay focused. Play fair.
-    </footer>
 
     <script>
-        // --- MULTI-GAME ENGINE ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const container = document.getElementById('gameContainer');
         const uiStart = document.getElementById('startOverlay');
         const uiHud = document.getElementById('hud');
         const uiModal = document.getElementById('gameModal');
         const hpFill = document.getElementById('hpFill');
         const ammoBar = document.getElementById('ammoBar');
+        const touchUI = document.getElementById('touchUI');
         
         let currentGame = 'neon';
         let gameActive = false;
         let keys = {};
         let frameCount = 0;
+        let touchDir = { x: 0, y: 0 };
+
+        function toggleFullscreen() {
+            container.classList.toggle('fullscreen');
+            setTimeout(resize, 100);
+            if(container.classList.contains('fullscreen')) {
+                touchUI.style.display = 'flex';
+            } else {
+                touchUI.style.display = 'none';
+            }
+        }
 
         function switchGame(type) {
-            if(gameActive) location.reload(); // Hard reset for clean state
+            if(gameActive) location.reload();
             currentGame = type;
             document.getElementById('btnNeon').classList.toggle('active', type === 'neon');
             document.getElementById('btnRivals').classList.toggle('active', type === 'rivals');
             
             if(type === 'neon') {
                 document.getElementById('gameTitleText').innerText = "NEON SURVIVOR";
-                document.getElementById('gameDescText').innerText = "Level up • Survive waves • Infinite upgrades";
+                document.getElementById('gameDescText').innerText = "Survive the swarm • WASD to move";
+                document.getElementById('rivalScore').classList.add('hidden');
+                document.getElementById('actionBtn').classList.add('hidden');
             } else {
                 document.getElementById('gameTitleText').innerText = "RIVALS 1v1";
-                document.getElementById('gameDescText').innerText = "First to 5 eliminations wins • Skill-based AI";
+                document.getElementById('gameDescText').innerText = "Defeat the Rival • SPACE to fire";
+                document.getElementById('rivalScore').classList.remove('hidden');
+                document.getElementById('actionBtn').classList.remove('hidden');
             }
         }
+
+        function touchMove(x, y) { touchDir = { x, y }; }
 
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
 
         function resize() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // --- GLOBAL GAME STATE ---
-        let player, entities, projectiles, particles, score, matchTime, state;
+        let player, entities, projectiles, particles, score;
 
         function initCurrentGame() {
             uiStart.classList.add('hidden');
             uiHud.classList.remove('hidden');
             gameActive = true;
             score = 0;
-            matchTime = Date.now();
-            entities = [];
-            projectiles = [];
-            particles = [];
+            entities = []; projectiles = []; particles = [];
 
             if (currentGame === 'neon') {
-                player = { x: canvas.width/2, y: canvas.height/2, hp: 100, xp: 0, level: 1, speed: 3, weapons: ['bolt'] };
-                document.getElementById('stat1Label').innerText = "Kills";
-                document.getElementById('stat2Label').innerText = "Level";
-            } else {
-                player = { x: 100, y: canvas.height/2, hp: 100, speed: 4, ammo: 10, maxAmmo: 10, reloading: false, wins: 0 };
-                // Add AI Rival
-                entities.push({ type: 'ai', x: canvas.width - 100, y: canvas.height/2, hp: 100, speed: 3, wins: 0, lastShot: 0 });
+                player = { x: canvas.width/2, y: canvas.height/2, hp: 100, speed: 3.5 };
                 document.getElementById('stat1Label').innerText = "Score";
-                document.getElementById('stat2Label').innerText = "Enemy HP";
+                document.getElementById('stat2Label').innerText = "Mode: Survival";
+            } else {
+                player = { x: 100, y: canvas.height/2, hp: 100, speed: 4.5, ammo: 10, maxAmmo: 10, reloading: false, wins: 0 };
+                entities.push({ type: 'ai', x: canvas.width - 100, y: canvas.height/2, hp: 100, speed: 3.2, wins: 0, lastShot: 0 });
+                document.getElementById('stat1Label').innerText = "Your Wins";
+                document.getElementById('stat2Label').innerText = "Mode: 1v1 Arena";
                 updateAmmoUI();
             }
-
             requestAnimationFrame(gameLoop);
         }
 
@@ -274,25 +306,17 @@
             ammoBar.innerHTML = '';
             for(let i=0; i<player.maxAmmo; i++) {
                 const dot = document.createElement('div');
-                dot.className = `w-2 h-4 rounded-sm ${i < player.ammo ? 'bg-blue-500' : 'bg-gray-800'}`;
+                dot.className = `w-2 h-full rounded-full ${i < player.ammo ? 'bg-blue-500' : 'bg-gray-800'}`;
                 ammoBar.appendChild(dot);
             }
         }
 
-        function createParticles(x, y, color, count=5) {
-            for(let i=0; i<count; i++) {
-                particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 1, color });
-            }
-        }
-
-        // --- UPDATE LOGIC ---
         function update() {
-            // Movement
-            let mx = 0, my = 0;
-            if (keys['KeyW']) my -= 1;
-            if (keys['KeyS']) my += 1;
-            if (keys['KeyA']) mx -= 1;
-            if (keys['KeyD']) mx += 1;
+            let mx = touchDir.x, my = touchDir.y;
+            if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
+            if (keys['KeyS'] || keys['ArrowDown']) my += 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
+            if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
             
             if (mx !== 0 || my !== 0) {
                 const angle = Math.atan2(my, mx);
@@ -300,199 +324,127 @@
                 player.y += Math.sin(angle) * player.speed;
             }
 
-            // Boundary checks
             player.x = Math.max(20, Math.min(canvas.width-20, player.x));
             player.y = Math.max(20, Math.min(canvas.height-20, player.y));
 
             if (currentGame === 'neon') {
-                // Spawn Enemies
-                if (frameCount % 40 === 0) {
+                if (frameCount % 45 === 0) {
                     const side = Math.floor(Math.random()*4);
                     let ex, ey;
                     if(side === 0) { ex = Math.random()*canvas.width; ey = -20; }
                     else if(side === 1) { ex = canvas.width+20; ey = Math.random()*canvas.height; }
                     else if(side === 2) { ex = Math.random()*canvas.width; ey = canvas.height+20; }
                     else { ex = -20; ey = Math.random()*canvas.height; }
-                    entities.push({ type: 'zombie', x: ex, y: ey, hp: 20, speed: 1.5 + (score/100) });
+                    entities.push({ x: ex, y: ey, hp: 20, speed: 1.8 + (score/200) });
                 }
-
-                // AI & Collisions
                 entities.forEach((e, idx) => {
-                    const dist = Math.hypot(player.x-e.x, player.y-e.y);
                     const angle = Math.atan2(player.y-e.y, player.x-e.x);
                     e.x += Math.cos(angle) * e.speed;
                     e.y += Math.sin(angle) * e.speed;
-                    if(dist < 20) player.hp -= 0.5;
+                    if(Math.hypot(player.x-e.x, player.y-e.y) < 25) player.hp -= 0.6;
                 });
-
-                // Auto Shooting
-                if (frameCount % 30 === 0 && entities.length > 0) {
+                if (frameCount % 25 === 0 && entities.length > 0) {
                     let closest = entities[0], minD = 9999;
                     entities.forEach(e => {
                         const d = Math.hypot(player.x-e.x, player.y-e.y);
                         if(d < minD) { minD = d; closest = e; }
                     });
                     const a = Math.atan2(closest.y-player.y, closest.x-player.x);
-                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, owner: 'player' });
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, owner: 'player' });
                 }
+                document.getElementById('stat1Val').innerText = score;
             } else {
-                // RIVALS 1v1 LOGIC
                 const ai = entities[0];
-                
-                // AI behavior: Strafe and shoot
-                ai.y += Math.sin(frameCount/30) * 3;
-                if(Date.now() - ai.lastShot > 1000) {
+                ai.y += Math.sin(frameCount/20) * 4;
+                if(Date.now() - ai.lastShot > 1100) {
                     const a = Math.atan2(player.y-ai.y, player.x-ai.x);
-                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*7, vy: Math.sin(a)*7, owner: 'ai' });
+                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, owner: 'ai' });
                     ai.lastShot = Date.now();
                 }
-
-                // Player shooting
-                if (keys['Space'] && player.ammo > 0 && !player.reloading) {
-                    projectiles.push({ x: player.x, y: player.y, vx: 10, vy: 0, owner: 'player' });
+                if ((keys['Space'] || keys['Enter']) && player.ammo > 0 && !player.reloading) {
+                    projectiles.push({ x: player.x, y: player.y, vx: 12, vy: 0, owner: 'player' });
                     player.ammo--;
-                    keys['Space'] = false; // Semi-auto
+                    if(keys['Space']) keys['Space'] = false;
                     updateAmmoUI();
                     if(player.ammo === 0) {
                         player.reloading = true;
-                        setTimeout(() => { player.ammo = player.maxAmmo; player.reloading = false; updateAmmoUI(); }, 1500);
+                        document.getElementById('stat2Val').innerText = "RELOADING...";
+                        setTimeout(() => { 
+                            player.ammo = player.maxAmmo; 
+                            player.reloading = false; 
+                            updateAmmoUI(); 
+                            document.getElementById('stat2Val').innerText = "ACTIVE";
+                        }, 1200);
                     }
                 }
-
-                document.getElementById('stat1Val').innerText = `${player.wins} - ${ai.wins}`;
-                document.getElementById('stat2Val').innerText = Math.ceil(ai.hp);
+                document.getElementById('stat1Val').innerText = player.wins;
+                document.getElementById('aiWins').innerText = ai.wins;
             }
 
-            // Projectile Physics
             for(let i=projectiles.length-1; i>=0; i--) {
-                const p = projectiles[i];
-                p.x += p.vx; p.y += p.vy;
-                
+                const p = projectiles[i]; p.x += p.vx; p.y += p.vy;
                 if (p.owner === 'player') {
                     if(currentGame === 'neon') {
                         entities.forEach((e, idx) => {
-                            if(Math.hypot(p.x-e.x, p.y-e.y) < 20) {
-                                e.hp -= 10;
-                                p.dead = true;
-                                if(e.hp <= 0) {
-                                    score++;
-                                    createParticles(e.x, e.y, '#3b82f6');
-                                    entities.splice(idx, 1);
-                                }
+                            if(Math.hypot(p.x-e.x, p.y-e.y) < 22) {
+                                e.hp -= 10; p.dead = true;
+                                if(e.hp <= 0) { score++; entities.splice(idx, 1); }
                             }
                         });
                     } else {
                         const ai = entities[0];
                         if(Math.hypot(p.x-ai.x, p.y-ai.y) < 25) {
-                            ai.hp -= 20;
-                            p.dead = true;
-                            createParticles(ai.x, ai.y, '#ef4444');
-                            if(ai.hp <= 0) {
-                                player.wins++;
-                                ai.hp = 100;
-                                ai.x = canvas.width - 100; ai.y = canvas.height/2;
-                                player.x = 100; player.y = canvas.height/2;
-                            }
+                            ai.hp -= 20; p.dead = true;
+                            if(ai.hp <= 0) { player.wins++; ai.hp = 100; player.hp = 100; }
                         }
                     }
                 } else if(p.owner === 'ai') {
                     if(Math.hypot(p.x-player.x, p.y-player.y) < 20) {
-                        player.hp -= 20;
-                        p.dead = true;
-                        createParticles(player.x, player.y, '#ffffff');
-                        if(player.hp <= 0) {
-                            entities[0].wins++;
-                            player.hp = 100;
-                            player.x = 100; player.y = canvas.height/2;
-                        }
+                        player.hp -= 25; p.dead = true;
+                        if(player.hp <= 0) { entities[0].wins++; player.hp = 100; }
                     }
                 }
-
                 if(p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height || p.dead) projectiles.splice(i, 1);
             }
 
-            // Particles
-            for(let i=particles.length-1; i>=0; i--) {
-                const p = particles[i];
-                p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-                if(p.life <= 0) particles.splice(i, 1);
-            }
-
-            // HUD Refresh
             hpFill.style.width = player.hp + '%';
-            if(currentGame === 'neon') {
-                document.getElementById('stat1Val').innerText = score;
-                document.getElementById('stat2Val').innerText = player.level;
-            }
-
             if(player.hp <= 0) gameOver();
             frameCount++;
         }
 
-        // --- RENDERING ---
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Background grid
             ctx.strokeStyle = '#111';
-            ctx.lineWidth = 1;
-            for(let i=0; i<canvas.width; i+=50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
-            for(let i=0; i<canvas.height; i+=50) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let i=0; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
 
-            // Particles
-            particles.forEach(p => {
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, 3, 3);
-            });
-            ctx.globalAlpha = 1;
-
-            // Entities
             entities.forEach(e => {
-                ctx.fillStyle = (currentGame === 'rivals') ? '#ef4444' : e.color;
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, (currentGame === 'rivals') ? 18 : 12, 0, Math.PI*2);
-                ctx.fill();
+                ctx.fillStyle = currentGame === 'rivals' ? '#f43f5e' : '#3b82f6';
+                ctx.beginPath(); ctx.arc(e.x, e.y, 18, 0, Math.PI*2); ctx.fill();
             });
 
-            // Projectiles
             projectiles.forEach(p => {
-                ctx.fillStyle = p.owner === 'player' ? '#3b82f6' : '#fff';
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
-                ctx.fill();
+                ctx.fillStyle = p.owner === 'player' ? '#60a5fa' : '#ffffff';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
             });
 
-            // Player
-            ctx.fillStyle = '#fff';
-            ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, 15, 0, Math.PI*2);
-            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#3b82f6';
+            ctx.beginPath(); ctx.arc(player.x, player.y, 16, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
-
-            // Health highlight
-            if (player.hp < 30 && frameCount % 20 < 10) {
-                ctx.strokeStyle = 'red';
-                ctx.lineWidth = 4;
-                ctx.strokeRect(0,0,canvas.width, canvas.height);
-            }
         }
 
         function gameOver() {
             gameActive = false;
             uiModal.classList.remove('hidden');
-            document.getElementById('modalTitle').innerText = "MATCH OVER";
-            document.getElementById('modalContent').innerHTML = `
-                <div class="text-gray-400 mb-4 font-mono">Game: ${currentGame === 'neon' ? 'Survival' : 'Arena'}<br>Points: ${score}</div>
-                <button onclick="location.reload()" class="bg-blue-600 w-full p-4 rounded-2xl font-bold">RETURN TO HOME</button>
-            `;
+            document.getElementById('modalContent').innerHTML = `<button onclick="location.reload()" class="bg-blue-600 w-full p-4 rounded-2xl font-bold">RESTART</button>`;
         }
 
         function gameLoop() {
             if (!gameActive) return;
-            update();
-            draw();
+            update(); draw();
             requestAnimationFrame(gameLoop);
         }
     </script>
