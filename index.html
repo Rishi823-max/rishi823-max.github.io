@@ -3,20 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Survivor</title>
+    <title>Dev Portfolio | Neon Survivor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
         body {
-            margin: 0;z
-            overflow: hidden;
-            background-color: #0a0a0a;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            touch-action: none;
+            background-color: #050505;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
         }
-        canvas {
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background: #000;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            border: 2px solid #1f2937;
+        }
+
+        #gameCanvas {
             display: block;
             image-rendering: pixelated;
         }
+
         .ui-overlay {
             position: absolute;
             top: 0;
@@ -26,64 +43,170 @@
             pointer-events: none;
             color: white;
         }
+
         .pointer-events-auto {
             pointer-events: auto;
         }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .low-hp {
-            animation: pulse-red 1.5s infinite;
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
         }
     </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
-    <canvas id="gameCanvas"></canvas>
-
-    <div class="ui-overlay flex flex-col items-center p-4">
-        <!-- XP Bar -->
-        <div class="w-full max-w-2xl bg-gray-800 h-4 rounded-full overflow-hidden border border-gray-700 mt-2">
-            <div id="xpFill" class="bg-blue-500 h-full transition-all duration-200" style="width: 0%"></div>
-        </div>
-        
-        <!-- Stats -->
-        <div class="flex justify-between w-full max-w-2xl mt-2 text-sm font-mono">
-            <div id="levelDisplay">LVL: 1</div>
-            <div id="timerDisplay">00:00</div>
-            <div id="killDisplay">KILLS: 0</div>
-        </div>
-
-        <!-- Center Message (Level Up/Start/Game Over) -->
-        <div id="modal" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900/95 p-8 rounded-2xl border-2 border-blue-500 pointer-events-auto text-center w-80">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-4">LEVEL UP!</h2>
-            <div id="upgradeOptions" class="space-y-3">
-                <!-- Buttons injected here -->
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <span class="text-xl font-bold tracking-tighter text-blue-500">DEV.PORTFOLIO</span>
+            <div class="space-x-8 text-sm font-medium hidden md:flex">
+                <a href="#about" class="hover:text-blue-400 transition-colors">About</a>
+                <a href="#projects" class="hover:text-blue-400 transition-colors">Projects</a>
+                <a href="#skills" class="hover:text-blue-400 transition-colors">Skills</a>
+                <a href="#contact" class="hover:text-blue-400 transition-colors">Contact</a>
             </div>
         </div>
+    </nav>
 
-        <!-- Start Screen -->
-        <div id="startScreen" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center pointer-events-auto">
-            <h1 class="text-6xl font-black text-blue-500 mb-2 italic">NEON SURVIVOR</h1>
-            <p class="text-gray-400 mb-8">WASD to move • Auto-aiming weapons</p>
-            <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 px-12 py-4 rounded-full text-xl font-bold transition-all transform hover:scale-105">
-                START MISSION
-            </button>
+    <!-- Hero Section -->
+    <section id="about" class="pt-32 pb-20 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
+        <div class="inline-block px-4 py-1.5 mb-6 text-xs font-semibold tracking-widest text-blue-400 uppercase bg-blue-400/10 rounded-full border border-blue-400/20">
+            Available for Projects
         </div>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
+            Creative <span class="text-blue-500 neon-text">Developer</span> & <br> Game Designer.
+        </h1>
+        <p class="text-gray-400 max-w-2xl text-lg mb-10 leading-relaxed">
+            I build immersive digital experiences using modern web technologies. 
+            I specialize in JavaScript, game logic, and interactive UI/UX design.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a href="#projects" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-full font-bold transition-all transform hover:scale-105">View My Work</a>
+            <a href="#contact" class="bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-3 rounded-full font-bold transition-all">Get In Touch</a>
+        </div>
+    </section>
 
-        <!-- Health Bar (Bottom) -->
-        <div class="absolute bottom-8 flex flex-col items-center">
-            <div id="healthContainer" class="w-64 bg-gray-800 h-3 rounded-full overflow-hidden border border-gray-700 mb-1">
-                <div id="healthFill" class="bg-red-500 h-full transition-all duration-100" style="width: 100%"></div>
+    <!-- Projects Section (The Game) -->
+    <section id="projects" class="py-20 px-6 bg-zinc-900/30">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+                <h2 class="text-3xl font-bold mb-4">Featured Project</h2>
+                <div class="flex items-center gap-2 text-blue-400 font-mono text-sm uppercase tracking-widest">
+                    <span class="w-8 h-[1px] bg-blue-400"></span>
+                    Neon Survivor: A JS Action Game
+                </div>
             </div>
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Health</span>
+
+            <!-- Game Embed Area -->
+            <div class="game-container shadow-2xl shadow-blue-500/10">
+                <canvas id="gameCanvas"></canvas>
+
+                <div class="ui-overlay flex flex-col items-center p-4">
+                    <!-- XP Bar -->
+                    <div class="w-full max-w-2xl bg-gray-800/80 h-3 rounded-full overflow-hidden border border-white/5 mt-2">
+                        <div id="xpFill" class="bg-blue-500 h-full transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="flex justify-between w-full max-w-2xl mt-2 text-[10px] font-mono tracking-widest text-gray-400">
+                        <div id="levelDisplay">LVL: 1</div>
+                        <div id="timerDisplay">00:00</div>
+                        <div id="killDisplay">KILLS: 0</div>
+                    </div>
+
+                    <!-- Modals -->
+                    <div id="modal" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 p-8 rounded-3xl border border-blue-500/50 backdrop-blur-xl pointer-events-auto text-center w-72">
+                        <h2 id="modalTitle" class="text-xl font-bold mb-4 text-blue-400">LEVEL UP!</h2>
+                        <div id="upgradeOptions" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Start Screen -->
+                    <div id="startScreen" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center pointer-events-auto backdrop-blur-sm">
+                        <h3 class="text-4xl font-black text-white mb-2 italic">NEON SURVIVOR</h3>
+                        <p class="text-blue-400 text-sm font-mono mb-8">ENGINE: CUSTOM CANVAS API</p>
+                        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 px-10 py-3 rounded-xl text-lg font-bold transition-all shadow-lg shadow-blue-600/20">
+                            PLAY DEMO
+                        </button>
+                    </div>
+
+                    <!-- Health Bar (Bottom) -->
+                    <div class="absolute bottom-6 flex flex-col items-center">
+                        <div id="healthContainer" class="w-48 bg-black/50 h-2 rounded-full overflow-hidden border border-white/10 mb-1">
+                            <div id="healthFill" class="bg-red-500 h-full transition-all duration-100" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 grid md:grid-cols-3 gap-8">
+                <div class="p-6 rounded-2xl bg-white/5 border border-white/5">
+                    <h4 class="font-bold mb-2">Game Logic</h4>
+                    <p class="text-sm text-gray-400">Developed a custom physics engine for collision detection and entity management.</p>
+                </div>
+                <div class="p-6 rounded-2xl bg-white/5 border border-white/5">
+                    <h4 class="font-bold mb-2">Optimization</h4>
+                    <p class="text-sm text-gray-400">Implemented particle pooling and efficient canvas rendering to maintain 60FPS.</p>
+                </div>
+                <div class="p-6 rounded-2xl bg-white/5 border border-white/5">
+                    <h4 class="font-bold mb-2">Systems Design</h4>
+                    <p class="text-sm text-gray-400">Designed a scalable upgrade system using modular weapon templates.</p>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 px-6 max-w-6xl mx-auto">
+        <h2 class="text-3xl font-bold mb-12 text-center">Tech Stack</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-zinc-900 border border-white/5 p-8 rounded-2xl flex flex-col items-center justify-center hover:border-blue-500/50 transition-all">
+                <span class="text-blue-500 font-bold text-lg mb-1">JavaScript</span>
+                <span class="text-xs text-gray-500">ES6+ / Game Engines</span>
+            </div>
+            <div class="bg-zinc-900 border border-white/5 p-8 rounded-2xl flex flex-col items-center justify-center hover:border-blue-500/50 transition-all">
+                <span class="text-blue-500 font-bold text-lg mb-1">HTML5</span>
+                <span class="text-xs text-gray-500">Canvas API / SVG</span>
+            </div>
+            <div class="bg-zinc-900 border border-white/5 p-8 rounded-2xl flex flex-col items-center justify-center hover:border-blue-500/50 transition-all">
+                <span class="text-blue-500 font-bold text-lg mb-1">Tailwind</span>
+                <span class="text-xs text-gray-500">UI / UX Design</span>
+            </div>
+            <div class="bg-zinc-900 border border-white/5 p-8 rounded-2xl flex flex-col items-center justify-center hover:border-blue-500/50 transition-all">
+                <span class="text-blue-500 font-bold text-lg mb-1">React</span>
+                <span class="text-xs text-gray-500">Modern Frameworks</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-6 max-w-4xl mx-auto text-center">
+        <div class="bg-blue-600 rounded-3xl p-12 shadow-2xl shadow-blue-600/20">
+            <h2 class="text-4xl font-extrabold mb-4">Let's work together.</h2>
+            <p class="mb-8 text-blue-100">Looking for a developer to help with your next big idea?</p>
+            <a href="mailto:hello@example.com" class="bg-white text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-xl transition-all inline-block">
+                Email Me
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/5 text-center text-sm text-gray-500">
+        &copy; 2024 Developer Portfolio. Built with Canvas & Tailwind.
+    </footer>
 
     <script>
-        /** @type {HTMLCanvasElement} */
+        // --- GAME LOGIC START ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const xpFill = document.getElementById('xpFill');
@@ -96,74 +219,26 @@
         const upgradeOptions = document.getElementById('upgradeOptions');
         const startScreen = document.getElementById('startScreen');
 
-        // Game State
-        let gameActive = false;
-        let paused = false;
-        let frameCount = 0;
-        let startTime = 0;
-        let kills = 0;
-        let lastTime = 0;
+        let gameActive = false, paused = false, frameCount = 0, startTime = 0, kills = 0, lastTime = 0;
 
-        // Player Config
-        const player = {
-            x: 0,
-            y: 0,
-            radius: 12,
-            speed: 3,
-            hp: 100,
-            maxHp: 100,
-            level: 1,
-            xp: 0,
-            xpToNext: 10,
-            weapons: [],
-            direction: { x: 0, y: 0 }
-        };
+        const player = { x: 0, y: 0, radius: 10, speed: 2.8, hp: 100, maxHp: 100, level: 1, xp: 0, xpToNext: 10, weapons: [], direction: { x: 0, y: 0 } };
+        const keys = {}, enemies = [], projectiles = [], particles = [], gems = [];
 
-        const keys = {};
-        const enemies = [];
-        const projectiles = [];
-        const particles = [];
-        const gems = [];
-
-        // Weapon Templates
         const WEAPON_TYPES = {
-            MAGIC_WAND: {
-                name: "Pulse Bolt",
-                description: "Fires energy at nearest enemy",
-                type: 'projectile',
-                cooldown: 800,
-                damage: 10,
-                speed: 7,
-                lastFire: 0
-            },
-            ORBITER: {
-                name: "Neon Blade",
-                description: "A blade that orbits you",
-                type: 'orbit',
-                damage: 5,
-                count: 1,
-                lastFire: 0
-            },
-            NOVA: {
-                name: "Nova Blast",
-                description: "Periodic blast in all directions",
-                type: 'nova',
-                cooldown: 2000,
-                damage: 15,
-                lastFire: 0
-            }
+            MAGIC_WAND: { name: "Pulse Bolt", description: "Energy at nearest enemy", type: 'projectile', cooldown: 800, damage: 10, speed: 7, lastFire: 0 },
+            ORBITER: { name: "Neon Blade", description: "Orbits around you", type: 'orbit', damage: 6, count: 1, lastFire: 0 },
+            NOVA: { name: "Nova Blast", description: "Aoe blast every 2s", type: 'nova', cooldown: 2000, damage: 15, lastFire: 0 }
         };
 
-        // Resize
         function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
         }
         window.addEventListener('resize', resize);
         resize();
 
-        // Input
-        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keydown', e => { if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault(); keys[e.code] = true; });
         window.addEventListener('keyup', e => keys[e.code] = false);
 
         function startGame() {
@@ -177,51 +252,22 @@
         }
 
         function createParticle(x, y, color) {
-            for (let i = 0; i < 5; i++) {
-                particles.push({
-                    x, y,
-                    vx: (Math.random() - 0.5) * 4,
-                    vy: (Math.random() - 0.5) * 4,
-                    life: 1,
-                    color
-                });
+            for (let i = 0; i < 4; i++) {
+                particles.push({ x, y, vx: (Math.random()-0.5)*4, vy: (Math.random()-0.5)*4, life: 1, color });
             }
         }
 
         function spawnEnemy() {
             if (!gameActive || paused) return;
-            
             const edge = Math.floor(Math.random() * 4);
             let x, y;
-            const dist = 600;
-
-            if (edge === 0) { x = player.x + (Math.random() - 0.5) * 1200; y = player.y - dist; }
-            else if (edge === 1) { x = player.x + (Math.random() - 0.5) * 1200; y = player.y + dist; }
-            else if (edge === 2) { x = player.x - dist; y = player.y + (Math.random() - 0.5) * 1200; }
-            else { x = player.x + dist; y = player.y + (Math.random() - 0.5) * 1200; }
-
-            const timeModifier = (Date.now() - startTime) / 60000; // Increase stats over time
-            
-            enemies.push({
-                x, y,
-                hp: 10 + (timeModifier * 15),
-                speed: 1.2 + (Math.random() * 0.5),
-                radius: 10 + Math.random() * 5,
-                color: `hsl(${280 + Math.random() * 60}, 70%, 60%)`
-            });
-        }
-
-        function getNearestEnemy() {
-            let minDisp = Infinity;
-            let nearest = null;
-            enemies.forEach(e => {
-                const d = Math.hypot(e.x - player.x, e.y - player.y);
-                if (d < minDisp) {
-                    minDisp = d;
-                    nearest = e;
-                }
-            });
-            return nearest;
+            const dist = 500;
+            if (edge === 0) { x = player.x + (Math.random()-0.5)*1000; y = player.y - dist; }
+            else if (edge === 1) { x = player.x + (Math.random()-0.5)*1000; y = player.y + dist; }
+            else if (edge === 2) { x = player.x - dist; y = player.y + (Math.random()-0.5)*1000; }
+            else { x = player.x + dist; y = player.y + (Math.random()-0.5)*1000; }
+            const mod = (Date.now() - startTime) / 60000;
+            enemies.push({ x, y, hp: 10 + (mod*15), speed: 1.1 + (Math.random()*0.4), radius: 10, color: `hsl(${220 + Math.random()*40}, 70%, 50%)` });
         }
 
         function levelUp() {
@@ -229,33 +275,21 @@
             modal.classList.remove('hidden');
             modalTitle.innerText = `LEVEL ${++player.level}`;
             upgradeOptions.innerHTML = '';
-
-            // Randomly pick 3 upgrades
             const pool = Object.keys(WEAPON_TYPES);
             const choices = [];
             while(choices.length < 3) {
-                const r = pool[Math.floor(Math.random() * pool.length)];
+                const r = pool[Math.floor(Math.random()*pool.length)];
                 if(!choices.includes(r)) choices.push(r);
             }
-
             choices.forEach(key => {
-                const weapon = WEAPON_TYPES[key];
+                const wT = WEAPON_TYPES[key];
                 const btn = document.createElement('button');
-                btn.className = "w-full bg-gray-800 hover:bg-blue-900 border border-gray-700 p-3 rounded-lg text-left transition-colors pointer-events-auto";
-                btn.innerHTML = `
-                    <div class="font-bold text-blue-400">${weapon.name}</div>
-                    <div class="text-xs text-gray-400">${weapon.description}</div>
-                `;
+                btn.className = "w-full bg-white/5 hover:bg-blue-600/20 border border-white/10 p-4 rounded-2xl text-left transition-all pointer-events-auto group";
+                btn.innerHTML = `<div class="font-bold group-hover:text-blue-400 transition-colors">${wT.name}</div><div class="text-[10px] text-gray-500 uppercase tracking-tighter">${wT.description}</div>`;
                 btn.onclick = () => {
-                    const existing = player.weapons.find(w => w.name === weapon.name);
-                    if (existing) {
-                        existing.level++;
-                        existing.damage *= 1.3;
-                        if (existing.cooldown) existing.cooldown *= 0.9;
-                        if (existing.count) existing.count++;
-                    } else {
-                        player.weapons.push({ ...weapon, level: 1 });
-                    }
+                    const existing = player.weapons.find(w => w.name === wT.name);
+                    if (existing) { existing.level++; existing.damage *= 1.3; if(existing.count) existing.count++; }
+                    else player.weapons.push({ ...wT, level: 1 });
                     modal.classList.add('hidden');
                     paused = false;
                 };
@@ -263,278 +297,122 @@
             });
         }
 
-        function update(dt) {
+        function update() {
             if (paused) return;
-
-            // Player Movement
             let mx = 0, my = 0;
             if (keys['KeyW'] || keys['ArrowUp']) my -= 1;
             if (keys['KeyS'] || keys['ArrowDown']) my += 1;
             if (keys['KeyA'] || keys['ArrowLeft']) mx -= 1;
             if (keys['KeyD'] || keys['ArrowRight']) mx += 1;
-
             if (mx !== 0 || my !== 0) {
                 const mag = Math.hypot(mx, my);
-                player.x += (mx / mag) * player.speed;
-                player.y += (my / mag) * player.speed;
-                player.direction = { x: mx / mag, y: my / mag };
+                player.x += (mx/mag) * player.speed;
+                player.y += (my/mag) * player.speed;
             }
 
-            // Fire Weapons
             const now = Date.now();
             player.weapons.forEach(w => {
                 if (w.type === 'projectile' && now - w.lastFire > w.cooldown) {
-                    const target = getNearestEnemy();
-                    if (target) {
-                        const angle = Math.atan2(target.y - player.y, target.x - player.x);
-                        projectiles.push({
-                            x: player.x, y: player.y,
-                            vx: Math.cos(angle) * w.speed,
-                            vy: Math.sin(angle) * w.speed,
-                            damage: w.damage,
-                            radius: 5,
-                            life: 200,
-                            color: '#3b82f6'
-                        });
+                    let minD = Infinity, nearest = null;
+                    enemies.forEach(e => { const d = Math.hypot(e.x-player.x, e.y-player.y); if(d<minD){minD=d; nearest=e;} });
+                    if (nearest) {
+                        const a = Math.atan2(nearest.y-player.y, nearest.x-player.x);
+                        projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*w.speed, vy: Math.sin(a)*w.speed, damage: w.damage, radius: 4, life: 100, color: '#3b82f6' });
                         w.lastFire = now;
                     }
                 }
                 if (w.type === 'nova' && now - w.lastFire > w.cooldown) {
-                    for(let i=0; i<12; i++) {
-                        const a = (i / 12) * Math.PI * 2;
-                        projectiles.push({
-                            x: player.x, y: player.y,
-                            vx: Math.cos(a) * 5,
-                            vy: Math.sin(a) * 5,
-                            damage: w.damage,
-                            radius: 6,
-                            life: 60,
-                            color: '#a855f7'
-                        });
+                    for(let i=0; i<8; i++){
+                        const a = (i/8)*Math.PI*2;
+                        projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*5, vy: Math.sin(a)*5, damage: w.damage, radius: 5, life: 40, color: '#6366f1' });
                     }
                     w.lastFire = now;
                 }
             });
 
-            // Update Projectiles
             for (let i = projectiles.length - 1; i >= 0; i--) {
-                const p = projectiles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life--;
-                
-                // Collision with enemies
-                enemies.forEach(e => {
-                    if (Math.hypot(p.x - e.x, p.y - e.y) < p.radius + e.radius) {
-                        e.hp -= p.damage;
-                        p.life = 0;
-                        createParticle(p.x, p.y, p.color);
-                    }
-                });
-
+                const p = projectiles[i]; p.x += p.vx; p.y += p.vy; p.life--;
+                enemies.forEach(e => { if (Math.hypot(p.x-e.x, p.y-e.y) < p.radius+e.radius) { e.hp -= p.damage; p.life = 0; createParticle(p.x, p.y, p.color); } });
                 if (p.life <= 0) projectiles.splice(i, 1);
             }
 
-            // Orbiting blades (drawn in loop, but logic here)
-            const orbitWeapon = player.weapons.find(w => w.type === 'orbit');
-            if (orbitWeapon) {
-                const angle = (now / 500);
-                const count = orbitWeapon.count;
-                for(let i=0; i<count; i++) {
-                    const offset = (i / count) * Math.PI * 2;
-                    const ox = player.x + Math.cos(angle + offset) * 70;
-                    const oy = player.y + Math.sin(angle + offset) * 70;
-                    
-                    enemies.forEach(e => {
-                        if(Math.hypot(ox - e.x, oy - e.y) < 20 + e.radius) {
-                            e.hp -= orbitWeapon.damage / 30; // Damage per frame
-                            if(Math.random() > 0.9) createParticle(e.x, e.y, '#10b981');
-                        }
-                    });
+            const orbitW = player.weapons.find(w => w.type === 'orbit');
+            if (orbitW) {
+                const angle = (now/400);
+                for(let i=0; i<orbitW.count; i++) {
+                    const ox = player.x + Math.cos(angle + (i/orbitW.count)*Math.PI*2)*60;
+                    const oy = player.y + Math.sin(angle + (i/orbitW.count)*Math.PI*2)*60;
+                    enemies.forEach(e => { if(Math.hypot(ox-e.x, oy-e.y) < 15+e.radius) e.hp -= orbitW.damage/40; });
                 }
             }
 
-            // Update Enemies
             for (let i = enemies.length - 1; i >= 0; i--) {
-                const e = enemies[i];
-                const angle = Math.atan2(player.y - e.y, player.x - e.x);
-                e.x += Math.cos(angle) * e.speed;
-                e.y += Math.sin(angle) * e.speed;
-
-                // Hit Player
-                if (Math.hypot(e.x - player.x, e.y - player.y) < e.radius + player.radius) {
-                    player.hp -= 0.2;
-                    if (player.hp <= 0) gameOver();
-                }
-
-                if (e.hp <= 0) {
-                    kills++;
-                    gems.push({ x: e.x, y: e.y, xp: 2 });
-                    enemies.splice(i, 1);
-                }
+                const e = enemies[i]; const a = Math.atan2(player.y-e.y, player.x-e.x);
+                e.x += Math.cos(a)*e.speed; e.y += Math.sin(a)*e.speed;
+                if (Math.hypot(e.x-player.x, e.y-player.y) < e.radius+player.radius) player.hp -= 0.3;
+                if (e.hp <= 0) { kills++; gems.push({ x: e.x, y: e.y, xp: 2 }); enemies.splice(i, 1); }
             }
 
-            // Update Gems
             for (let i = gems.length - 1; i >= 0; i--) {
-                const g = gems[i];
-                const dist = Math.hypot(g.x - player.x, g.y - player.y);
-                if (dist < 100) {
-                    const angle = Math.atan2(player.y - g.y, player.x - g.x);
-                    g.x += Math.cos(angle) * 8;
-                    g.y += Math.sin(angle) * 8;
-                }
-                if (dist < player.radius + 5) {
-                    player.xp += g.xp;
-                    if (player.xp >= player.xpToNext) {
-                        player.xp -= player.xpToNext;
-                        player.xpToNext *= 1.2;
-                        levelUp();
-                    }
-                    gems.splice(i, 1);
-                }
+                const g = gems[i]; const d = Math.hypot(g.x-player.x, g.y-player.y);
+                if (d < 80) { const a = Math.atan2(player.y-g.y, player.x-g.x); g.x += Math.cos(a)*6; g.y += Math.sin(a)*6; }
+                if (d < 15) { player.xp += g.xp; if (player.xp >= player.xpToNext) { player.xp -= player.xpToNext; player.xpToNext *= 1.3; levelUp(); } gems.splice(i, 1); }
             }
 
-            // Update Particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.02;
-                if (p.life <= 0) particles.splice(i, 1);
-            }
+            for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx; p.y += p.vy; p.life -= 0.03; if (p.life <= 0) particles.splice(i, 1); }
 
-            // Spawn
             if (frameCount % 60 === 0) spawnEnemy();
             frameCount++;
 
-            // UI Update
-            xpFill.style.width = `${(player.xp / player.xpToNext) * 100}%`;
-            healthFill.style.width = `${(player.hp / player.maxHp) * 100}%`;
+            xpFill.style.width = `${(player.xp/player.xpToNext)*100}%`;
+            healthFill.style.width = `${(player.hp/player.maxHp)*100}%`;
             levelDisplay.innerText = `LVL: ${player.level}`;
             killDisplay.innerText = `KILLS: ${kills}`;
-            
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const s = (elapsed % 60).toString().padStart(2, '0');
-            timerDisplay.innerText = `${m}:${s}`;
+            const elapsed = Math.floor((Date.now()-startTime)/1000);
+            timerDisplay.innerText = `${Math.floor(elapsed/60).toString().padStart(2,'0')}:${(elapsed%60).toString().padStart(2,'0')}`;
+            if (player.hp <= 0) gameOver();
         }
 
         function draw() {
-            ctx.fillStyle = '#0a0a0a';
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Camera follow (keep player centered)
             ctx.save();
-            ctx.translate(canvas.width / 2 - player.x, canvas.height / 2 - player.y);
+            ctx.translate(canvas.width/2 - player.x, canvas.height/2 - player.y);
 
-            // Draw Grid
-            ctx.strokeStyle = '#1a1a1a';
-            ctx.lineWidth = 1;
-            const gridSize = 100;
-            const startX = Math.floor((player.x - canvas.width) / gridSize) * gridSize;
-            const startY = Math.floor((player.y - canvas.height) / gridSize) * gridSize;
-            for(let x = startX; x < player.x + canvas.width; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, player.y - canvas.height); ctx.lineTo(x, player.y + canvas.height); ctx.stroke();
-            }
-            for(let y = startY; y < player.y + canvas.height; y += gridSize) {
-                ctx.beginPath(); ctx.moveTo(player.x - canvas.width, y); ctx.lineTo(player.x + canvas.width, y); ctx.stroke();
-            }
+            ctx.strokeStyle = '#111';
+            for(let x = -2000; x < 2000; x+=100) { ctx.beginPath(); ctx.moveTo(x,-2000); ctx.lineTo(x,2000); ctx.stroke(); }
+            for(let y = -2000; y < 2000; y+=100) { ctx.beginPath(); ctx.moveTo(-2000,y); ctx.lineTo(2000,y); ctx.stroke(); }
 
-            // Gems
-            gems.forEach(g => {
-                ctx.fillStyle = '#3b82f6';
-                ctx.shadowBlur = 10; ctx.shadowColor = '#3b82f6';
-                ctx.beginPath();
-                ctx.moveTo(g.x, g.y - 4);
-                ctx.lineTo(g.x + 4, g.y);
-                ctx.lineTo(g.x, g.y + 4);
-                ctx.lineTo(g.x - 4, g.y);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-
-            // Particles
-            particles.forEach(p => {
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.fillRect(p.x, p.y, 2, 2);
-            });
+            gems.forEach(g => { ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(g.x, g.y, 3, 0, 7); ctx.fill(); });
+            particles.forEach(p => { ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 2, 2); });
             ctx.globalAlpha = 1;
+            projectiles.forEach(p => { ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, 7); ctx.fill(); });
+            enemies.forEach(e => { ctx.fillStyle = e.color; ctx.beginPath(); ctx.arc(e.x, e.y, e.radius, 0, 7); ctx.fill(); });
 
-            // Projectiles
-            projectiles.forEach(p => {
-                ctx.fillStyle = p.color;
-                ctx.shadowBlur = 8; ctx.shadowColor = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            });
-
-            // Enemies
-            enemies.forEach(e => {
-                ctx.fillStyle = e.color;
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
-                ctx.fill();
-                // Glow
-                ctx.strokeStyle = e.color;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            });
-
-            // Orbiting blades
-            const orbitWeapon = player.weapons.find(w => w.type === 'orbit');
-            if (orbitWeapon) {
-                const angle = (Date.now() / 500);
-                const count = orbitWeapon.count;
-                for(let i=0; i<count; i++) {
-                    const offset = (i / count) * Math.PI * 2;
-                    const ox = player.x + Math.cos(angle + offset) * 70;
-                    const oy = player.y + Math.sin(angle + offset) * 70;
+            const orbitW = player.weapons.find(w => w.type === 'orbit');
+            if (orbitW) {
+                const angle = (Date.now()/400);
+                for(let i=0; i<orbitW.count; i++) {
                     ctx.fillStyle = '#10b981';
-                    ctx.shadowBlur = 15; ctx.shadowColor = '#10b981';
-                    ctx.beginPath();
-                    ctx.arc(ox, oy, 8, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
+                    ctx.beginPath(); ctx.arc(player.x + Math.cos(angle + (i/orbitW.count)*Math.PI*2)*60, player.y + Math.sin(angle + (i/orbitW.count)*Math.PI*2)*60, 6, 0, 7); ctx.fill();
                 }
             }
 
-            // Player
             ctx.fillStyle = '#fff';
-            ctx.shadowBlur = 20; ctx.shadowColor = '#fff';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.shadowBlur = 10; ctx.shadowColor = '#fff';
+            ctx.beginPath(); ctx.arc(player.x, player.y, player.radius, 0, 7); ctx.fill();
             ctx.shadowBlur = 0;
-
             ctx.restore();
         }
 
         function gameOver() {
             gameActive = false;
             modal.classList.remove('hidden');
-            modalTitle.innerText = "MISSION FAILED";
-            upgradeOptions.innerHTML = `
-                <div class="text-gray-400 mb-4 font-mono">
-                    Time: ${timerDisplay.innerText}<br>
-                    Kills: ${kills}<br>
-                    Level: ${player.level}
-                </div>
-                <button onclick="location.reload()" class="w-full bg-blue-600 p-3 rounded-lg font-bold">RETRY</button>
-            `;
+            modalTitle.innerText = "DEMO OVER";
+            upgradeOptions.innerHTML = `<div class="text-gray-400 mb-4 text-xs">Score: ${kills} Kills</div><button onclick="location.reload()" class="w-full bg-blue-600 p-3 rounded-xl font-bold">RESTART</button>`;
         }
 
-        function gameLoop(timestamp) {
-            if (!gameActive) return;
-            const dt = timestamp - lastTime;
-            lastTime = timestamp;
-
-            update(dt);
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
+        function gameLoop(t) { if (!gameActive) return; update(); draw(); requestAnimationFrame(gameLoop); }
     </script>
 </body>
 </html>
