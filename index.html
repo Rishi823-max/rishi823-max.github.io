@@ -4,17 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dev Portfolio | Game Showcase</title>
+    <title>ARCADE | Creative Developer Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
         
         body {
-            background-color: #050505;
+            background-color: #030303;
             color: #e5e7eb;
             font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
-            touch-action: none; 
+        }
+
+        .glass-card {
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
         }
 
         .game-wrapper {
@@ -42,121 +52,179 @@
 
         canvas { display: block; image-rendering: auto; }
 
-        .ui-layer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            color: white;
-            z-index: 10;
+        .tab-btn { color: #9ca3af; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; }
+        .tab-btn.active { background-color: #3b82f6; color: white; border-color: #60a5fa; }
+
+        .nav-link {
+            position: relative;
+            color: #9ca3af;
+            transition: color 0.3s;
+        }
+        .nav-link:hover { color: #fff; }
+        
+        .skill-badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
         }
 
-        .interactable { pointer-events: auto; }
-        .tab-btn { color: #6b7280; font-weight: 700; transition: all 0.2s; }
-        .tab-btn.active { background-color: #3b82f6; color: white; }
-        .ctrl-hint {
-            background: rgba(0,0,0,0.6);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
+        .launch-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);
         }
-
-        /* Menu Styles */
-        .menu {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.95);
-            border: 2px solid #3b82f6;
-            padding: 1.5rem;
-            text-align: center;
-            border-radius: 1rem;
-            pointer-events: auto;
-            color: white;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
-            width: 340px;
-            max-width: 90%;
-            z-index: 50;
-        }
-        .hidden { display: none; }
-        .btn-action {
-            background: #3b82f6;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 0.4rem;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            border: none;
-        }
-        .btn-action:hover { background: #60a5fa; transform: scale(1.05); }
     </style>
 </head>
-<body class="overflow-x-hidden">
+<body class="overflow-x-hidden hero-gradient">
 
-    <nav class="fixed top-0 w-full z-50 bg-black/70 backdrop-blur-xl border-b border-white/5">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <span class="text-xl font-bold tracking-tighter text-white">ARCADE.DEV</span>
-            <div class="hidden md:flex gap-3">
-                <span class="ctrl-hint text-gray-400 font-mono">[ESC] Fullscreen</span>
-                <span class="ctrl-hint text-gray-400 font-mono">Arrows to Move</span>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">A</div>
+                <span class="text-xl font-extrabold tracking-tighter text-white">ARCADE</span>
+            </div>
+            <div class="hidden md:flex gap-8 items-center">
+                <a href="#about" class="nav-link text-sm uppercase tracking-widest font-bold">About</a>
+                <a href="#projects" class="nav-link text-sm uppercase tracking-widest font-bold">Games</a>
+                <a href="#skills" class="nav-link text-sm uppercase tracking-widest font-bold">Skills</a>
+                <button onclick="launchAboutBlank()" class="launch-btn hover:bg-blue-500 px-6 py-2 rounded-full text-sm font-bold transition-all text-white">Launch App</button>
             </div>
         </div>
     </nav>
 
-    <section id="projects" class="pt-32 pb-20 px-6">
-        <div class="max-w-5xl mx-auto">
-            
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex gap-2 bg-black/40 p-1 rounded-2xl border border-white/5">
-                    <button id="btnDropper" onclick="switchGame('dropper')" class="tab-btn active px-6 py-2 rounded-xl text-sm">Neon Dropper</button>
-                    <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn px-6 py-2 rounded-xl text-sm">Neon Survivor</button>
-                    <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2 rounded-xl text-sm">Rivals 1v1</button>
+    <!-- Hero Section -->
+    <section id="about" class="pt-40 pb-20 px-6">
+        <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <span class="inline-block px-4 py-1 rounded-full bg-blue-600/20 text-blue-400 text-xs font-bold mb-6 tracking-widest uppercase border border-blue-500/20">Independent Developer</span>
+                <h1 class="text-6xl md:text-7xl font-black text-white leading-tight mb-6">Welcome to the <span class="text-blue-500">ARCADE.</span></h1>
+                <p class="text-gray-400 text-lg max-w-lg mb-8 leading-relaxed">
+                    I build high-performance web applications and interactive canvas-based gaming experiences that push the boundaries of the browser.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="launchAboutBlank()" class="launch-btn text-white px-8 py-3 rounded-xl font-bold hover:scale-105 transition-all flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Launch ARCADE
+                    </button>
+                    <a href="#projects" class="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-gray-200 transition-all">Quick Play</a>
                 </div>
             </div>
-
-            <div id="gameContainer" class="game-wrapper shadow-2xl shadow-blue-500/10">
-                <canvas id="gameCanvas"></canvas>
-                
-                <div id="gameUI" class="ui-layer">
-                    <!-- Dynamic HUD -->
-                    <div id="hud" class="hidden absolute inset-0 p-6 flex justify-between items-start">
-                        <div class="flex gap-4">
-                            <div class="bg-black/60 px-4 py-2 rounded-lg border border-white/10">
-                                <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Score</div>
-                                <div id="stat1Val" class="text-xl font-black">0</div>
-                            </div>
-                            <div id="rivalScoreBox" class="hidden bg-black/60 px-4 py-2 rounded-lg border border-white/10">
-                                <div class="text-[10px] text-red-400 font-bold uppercase">Enemy</div>
-                                <div id="statEnemyVal" class="text-xl font-black">0</div>
-                            </div>
-                        </div>
-                        <div id="ammoBox" class="hidden bg-black/60 px-4 py-2 rounded-lg border border-white/10">
-                            <div class="text-[10px] text-purple-400 font-bold uppercase">Ammo</div>
-                            <div id="ammoVal" class="text-xl font-black">8</div>
-                        </div>
+            
+            <div class="glass-card p-8 flex flex-col gap-6">
+                <div class="flex gap-4 items-center">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M8 10v4"/><path d="M15 13h.01"/><path d="M18 11h.01"/></svg>
                     </div>
-
-                    <!-- Start Menu -->
-                    <div id="start-menu" class="menu">
-                        <h1 id="menuTitle" class="text-2xl font-black mb-2 uppercase">Neon Dropper</h1>
-                        <p id="menuDesc" class="text-[10px] opacity-60 mb-6 uppercase tracking-widest">Ultra-fast Descent</p>
-                        <button class="btn-action w-full" onclick="initCurrentGame()">Start Match</button>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Project Status</h3>
+                        <p class="text-sm text-gray-400">WebGL & Canvas Active</p>
                     </div>
-
-                    <!-- Death Menu -->
-                    <div id="death-menu" class="menu hidden">
-                        <h2 class="text-2xl font-bold text-red-500 mb-2">MATCH ENDED</h2>
-                        <p class="text-lg mb-6">Final Score: <span id="finalScore">0</span></p>
-                        <button class="btn-action w-full" onclick="initCurrentGame()">Play Again</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-blue-500 font-black text-2xl">12+</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Live Games</div>
+                    </div>
+                    <div class="p-4 bg-white/5 rounded-xl border border-white/5">
+                        <div class="text-purple-500 font-black text-2xl">High</div>
+                        <div class="text-[10px] text-gray-500 uppercase tracking-widest">Performance</div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- Game Console Section -->
+    <section id="projects" class="py-20 px-6">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-black text-white mb-4 uppercase">The Arcade Showcase</h2>
+                <p class="text-gray-500">Interactive games built directly into the browser. Try them out!</p>
+            </div>
+
+            <div class="flex items-center justify-center gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/5 w-fit mx-auto">
+                <button id="btnDropper" onclick="switchGame('dropper')" class="tab-btn active px-6 py-2 rounded-xl text-sm">Neon Dropper</button>
+                <button id="btnNeon" onclick="switchGame('neon')" class="tab-btn px-6 py-2 rounded-xl text-sm">Neon Survivor</button>
+                <button id="btnRivals" onclick="switchGame('rivals')" class="tab-btn px-6 py-2 rounded-xl text-sm">Rivals 1v1</button>
+            </div>
+
+            <div id="gameContainer" class="game-wrapper shadow-[0_0_100px_rgba(59,130,246,0.1)]">
+                <canvas id="gameCanvas"></canvas>
+                
+                <div id="gameUI" class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <!-- HUD -->
+                    <div id="hud" class="hidden absolute top-0 w-full p-8 flex justify-between items-start text-white">
+                        <div class="flex gap-4">
+                            <div class="bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
+                                <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Score</div>
+                                <div id="stat1Val" class="text-2xl font-black">0</div>
+                            </div>
+                            <div id="rivalScoreBox" class="hidden bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
+                                <div class="text-[10px] text-red-400 font-bold uppercase tracking-widest">Enemy</div>
+                                <div id="statEnemyVal" class="text-2xl font-black">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start Menu -->
+                    <div id="start-menu" class="glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6 border-blue-500/30">
+                        <h1 id="menuTitle" class="text-3xl font-black mb-2 text-white uppercase tracking-tighter">Neon Dropper</h1>
+                        <p id="menuDesc" class="text-xs text-blue-400 font-bold mb-8 uppercase tracking-[0.3em]">Ultra-fast Descent</p>
+                        <button class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold text-white transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20" onclick="initCurrentGame()">
+                            LAUNCH GAME
+                        </button>
+                    </div>
+
+                    <!-- Death Menu -->
+                    <div id="death-menu" class="hidden glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6 border-red-500/30">
+                        <h2 class="text-3xl font-black text-red-500 mb-2 uppercase">TERMINATED</h2>
+                        <p class="text-gray-400 mb-6">Final Metric: <span id="finalScore" class="text-white font-bold">0</span></p>
+                        <button class="w-full bg-red-600 hover:bg-red-500 py-4 rounded-xl font-bold text-white transition-all transform hover:scale-105" onclick="initCurrentGame()">
+                            RETRY SESSION
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 px-6 bg-white/[0.01]">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-2xl font-bold text-white mb-12 text-center uppercase tracking-widest">Tech Stack</h2>
+            <div class="flex flex-wrap justify-center gap-4">
+                <span class="skill-badge">JavaScript (ES6+)</span>
+                <span class="skill-badge">React</span>
+                <span class="skill-badge">Node.js</span>
+                <span class="skill-badge">Tailwind CSS</span>
+                <span class="skill-badge">HTML5 Canvas</span>
+                <span class="skill-badge">Three.js</span>
+                <span class="skill-badge">Firebase</span>
+                <span class="skill-badge">Git</span>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-white/5 text-center text-gray-600 text-sm">
+        <p>&copy; 2026 ARCADE. Built for speed and interaction.</p>
+    </footer>
+
     <script>
+        // Feature: Launch into about:blank
+        function launchAboutBlank() {
+            const currentHTML = document.documentElement.outerHTML;
+            const newWindow = window.open('about:blank', '_blank');
+            if (newWindow) {
+                newWindow.document.open();
+                newWindow.document.write(currentHTML);
+                newWindow.document.close();
+            } else {
+                alert('Please allow pop-ups to launch the app!');
+            }
+        }
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('gameContainer');
@@ -190,7 +258,6 @@
         }
 
         function resize() {
-            // Neon Dropper window is now bigger (80% of container or 600px max)
             if (currentGame === 'dropper') {
                 canvas.width = Math.min(container.clientWidth * 0.8, 600);
             } else {
@@ -232,12 +299,11 @@
 
             // UI Reset
             document.getElementById('rivalScoreBox').classList.add('hidden');
-            document.getElementById('ammoBox').classList.add('hidden');
             document.getElementById('stat1Label').innerText = "Score";
 
             if (currentGame === 'dropper') {
                 player = { x: canvas.width/2, y: 150, dir: 1 };
-                speed = 3.0;
+                speed = 3.5;
                 cameraY = 0;
             } else if (currentGame === 'neon') {
                 player = { x: canvas.width/2, y: canvas.height/2, hp: 100, speed: 4 };
@@ -246,7 +312,6 @@
                 player = { x: 100, y: canvas.height/2, hp: 100, ammo: 8, maxAmmo: 8 };
                 entities.push({ x: canvas.width-100, y: canvas.height/2, hp: 100, lastShot: 0 });
                 document.getElementById('rivalScoreBox').classList.remove('hidden');
-                document.getElementById('ammoBox').classList.remove('hidden');
             }
             
             requestAnimationFrame(gameLoop);
@@ -254,20 +319,20 @@
 
         function update() {
             if (currentGame === 'dropper') {
-                speed += 0.001;
-                player.x += player.dir * (5.5 + speed/5);
+                speed += 0.0015;
+                player.x += player.dir * (5.8 + speed/5);
                 player.y += speed;
                 cameraY = player.y - 150;
                 if (player.x < 15 || player.x > canvas.width - 15) endGame();
 
-                if (entities.length < 6) {
+                if (entities.length < 7) {
                     const y = entities.length === 0 ? player.y + 400 : entities[entities.length-1].y + 250;
-                    const gap = Math.max(90, 160 - (speed * 3));
+                    const gap = Math.max(85, 155 - (speed * 3.5));
                     const cx = 80 + Math.random() * (canvas.width - 160);
                     entities.push({ y, cx, gap });
                 }
                 entities.forEach((o, i) => {
-                    if (Math.abs(player.y - o.y) < 15) {
+                    if (Math.abs(player.y - o.y) < 18) {
                         if (player.x < o.cx - o.gap/2 || player.x > o.cx + o.gap/2) endGame();
                     }
                     if (o.y < player.y - 300) entities.splice(i, 1);
@@ -288,43 +353,51 @@
                 player.x = Math.max(20, Math.min(canvas.width-20, player.x));
                 player.y = Math.max(20, Math.min(canvas.height-20, player.y));
 
-                if(frameCount % 45 === 0) {
-                    entities.push({ x: Math.random()*canvas.width, y: -20, hp: 10 });
+                if(frameCount % 40 === 0) {
+                    const side = Math.floor(Math.random()*4);
+                    let ex, ey;
+                    if(side === 0) { ex = Math.random()*canvas.width; ey = -20; }
+                    else if(side === 1) { ex = canvas.width+20; ey = Math.random()*canvas.height; }
+                    else if(side === 2) { ex = Math.random()*canvas.width; ey = canvas.height+20; }
+                    else { ex = -20; ey = Math.random()*canvas.height; }
+                    entities.push({ x: ex, y: ey });
                 }
                 entities.forEach((e, i) => {
                     const a = Math.atan2(player.y-e.y, player.x-e.x);
-                    e.x += Math.cos(a) * 2; e.y += Math.sin(a) * 2;
+                    e.x += Math.cos(a) * 2.2; e.y += Math.sin(a) * 2.2;
                     if(Math.hypot(player.x-e.x, player.y-e.y) < 25) endGame();
                 });
-                if(frameCount % 20 === 0 && entities.length > 0) {
-                    const a = Math.atan2(entities[0].y-player.y, entities[0].x-player.x);
-                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, owner: 'p' });
+                if(frameCount % 25 === 0 && entities.length > 0) {
+                    const nearest = entities.sort((a,b) => Math.hypot(a.x-player.x, a.y-player.y) - Math.hypot(b.x-player.x, b.y-player.y))[0];
+                    const a = Math.atan2(nearest.y-player.y, nearest.x-player.x);
+                    projectiles.push({ x: player.x, y: player.y, vx: Math.cos(a)*12, vy: Math.sin(a)*12, owner: 'p' });
                 }
                 projectiles.forEach((p, pi) => {
                     p.x += p.vx; p.y += p.vy;
                     entities.forEach((e, ei) => {
-                        if(Math.hypot(p.x-e.x, p.y-e.y) < 20) {
+                        if(Math.hypot(p.x-e.x, p.y-e.y) < 22) {
                             score++; entities.splice(ei, 1); p.dead = true;
                         }
                     });
                 });
 
             } else if (currentGame === 'rivals') {
-                if(keys['ArrowUp']) player.y -= 5;
-                if(keys['ArrowDown']) player.y += 5;
+                if(keys['ArrowUp'] || keys['KeyW']) player.y -= 6;
+                if(keys['ArrowDown'] || keys['KeyS']) player.y += 6;
                 player.y = Math.max(30, Math.min(canvas.height-30, player.y));
                 
                 const ai = entities[0];
-                ai.y += Math.sin(frameCount/20) * 4;
+                ai.y += Math.sin(frameCount/15) * 5;
 
-                if(keys['Space'] && player.ammo > 0) {
-                    projectiles.push({ x: player.x, y: player.y, vx: 12, vy: 0, owner: 'p' });
-                    player.ammo--; keys['Space'] = false;
-                    if(player.ammo === 0) setTimeout(() => player.ammo = 8, 1000);
+                if((keys['Space'] || keys['Enter']) && player.ammo > 0) {
+                    projectiles.push({ x: player.x, y: player.y, vx: 14, vy: 0, owner: 'p' });
+                    player.ammo--; 
+                    keys['Space'] = false; keys['Enter'] = false;
+                    if(player.ammo === 0) setTimeout(() => player.ammo = 8, 800);
                 }
-                if(frameCount % 60 === 0) {
+                if(frameCount % 55 === 0) {
                     const a = Math.atan2(player.y-ai.y, player.x-ai.x);
-                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*8, vy: Math.sin(a)*8, owner: 'e' });
+                    projectiles.push({ x: ai.x, y: ai.y, vx: Math.cos(a)*10, vy: Math.sin(a)*10, owner: 'e' });
                 }
                 projectiles.forEach((p, i) => {
                     p.x += p.vx; p.y += p.vy;
@@ -332,11 +405,10 @@
                     if(p.owner === 'e' && Math.hypot(p.x-player.x, p.y-player.y) < 25) { enemyScore++; p.dead = true; }
                     if(score >= 10 || enemyScore >= 10) endGame();
                 });
-                document.getElementById('ammoVal').innerText = player.ammo;
                 document.getElementById('statEnemyVal').innerText = enemyScore;
             }
 
-            projectiles = projectiles.filter(p => !p.dead && p.x > -50 && p.x < canvas.width+50);
+            projectiles = projectiles.filter(p => !p.dead && p.x > -50 && p.x < canvas.width+50 && p.y > -50 && p.y < canvas.height+50);
             document.getElementById('stat1Val').innerText = score;
             frameCount++;
         }
@@ -351,25 +423,37 @@
                 ctx.fillStyle = '#111';
                 ctx.fillRect(0, cameraY, 15, canvas.height);
                 ctx.fillRect(canvas.width-15, cameraY, 15, canvas.height);
-                ctx.fillStyle = '#f00';
+                ctx.fillStyle = '#ef4444';
                 entities.forEach(o => {
                     ctx.fillRect(15, o.y-10, o.cx-o.gap/2-15, 20);
                     ctx.fillRect(o.cx+o.gap/2, o.y-10, canvas.width-(o.cx+o.gap/2)-15, 20);
                 });
-                ctx.fillStyle = '#0ff';
-                ctx.shadowBlur = 15; ctx.shadowColor = '#0ff';
+                ctx.fillStyle = '#3b82f6';
+                ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
                 ctx.beginPath(); ctx.arc(player.x, player.y, 10, 0, Math.PI*2); ctx.fill();
                 ctx.restore();
-            } else {
+            } else if (currentGame === 'neon') {
                 ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
                 ctx.beginPath(); ctx.arc(player.x, player.y, 18, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
                 entities.forEach(e => {
-                    ctx.fillStyle = (currentGame === 'rivals') ? '#f43f5e' : '#3b82f6';
-                    ctx.beginPath(); ctx.arc(e.x, e.y, 22, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.beginPath(); ctx.arc(e.x, e.y, 20, 0, Math.PI*2); ctx.fill();
                 });
                 projectiles.forEach(p => {
-                    ctx.fillStyle = p.owner === 'p' ? '#3b82f6' : '#fff';
+                    ctx.fillStyle = '#3b82f6';
                     ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+                });
+            } else if (currentGame === 'rivals') {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath(); ctx.arc(player.x, player.y, 20, 0, Math.PI*2); ctx.fill();
+                const ai = entities[0];
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath(); ctx.arc(ai.x, ai.y, 25, 0, Math.PI*2); ctx.fill();
+                projectiles.forEach(p => {
+                    ctx.fillStyle = p.owner === 'p' ? '#3b82f6' : '#fff';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI*2); ctx.fill();
                 });
             }
         }
@@ -388,3 +472,4 @@
     </script>
 </body>
 </html>
+
