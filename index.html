@@ -13,6 +13,8 @@
             color: #e5e7eb;
             font-family: 'Plus Jakarta Sans', sans-serif;
             scroll-behavior: smooth;
+            margin: 0;
+            padding: 0;
         }
 
         .glass-card {
@@ -81,6 +83,10 @@
         }
         .game-wrapper:hover .control-overlay {
             opacity: 1;
+        }
+        
+        kbd {
+            font-family: 'JetBrains Mono', monospace;
         }
     </style>
 </head>
@@ -240,7 +246,6 @@
                 `);
                 newWindow.document.close();
             } else {
-                // Custom non-alert message for iFrame environments
                 const msg = document.createElement('div');
                 msg.className = "fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full font-bold z-[100] shadow-2xl";
                 msg.innerText = "Please allow pop-ups to launch the standalone app.";
@@ -263,17 +268,25 @@
         let player, entities, projectiles, cameraY, speed, score, enemyScore;
 
         window.addEventListener('keydown', e => {
+            // CRITICAL FIX: Prevent Space from scrolling or triggering elements that cause blur
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+
             keys[e.code] = true;
+            
             if (e.code === 'Escape') {
                 container.classList.remove('fullscreen-mode');
                 setTimeout(resize, 100);
             }
+            
             if (currentGame === 'dropper' && gameActive && (e.code === 'Space' || e.code.includes('Arrow'))) {
                 player.dir *= -1;
             }
         });
+
         window.addEventListener('keyup', e => keys[e.code] = false);
-        window.addEventListener('mousedown', () => {
+        window.addEventListener('mousedown', (e) => {
             if(currentGame === 'dropper' && gameActive) player.dir *= -1;
         });
 
@@ -483,4 +496,3 @@
     </script>
 </body>
 </html>
-
