@@ -40,6 +40,15 @@
             align-items: center;
         }
 
+        .game-wrapper.fullscreen-mode {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9999;
+            border-radius: 0;
+            border: none;
+        }
+
         canvas { display: block; image-rendering: auto; }
 
         .tab-btn { color: #9ca3af; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; }
@@ -72,7 +81,7 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 20px; font-weight: 800;
             background: rgba(255, 255, 255, 0.05);
-            transition: transform 0.1s, background 0.1s;
+            transition: all 0.1s;
         }
 
         .tile-2 { background: #eee4da; color: #776e65; }
@@ -81,11 +90,22 @@
         .tile-16 { background: #f59563; color: #fff; }
         .tile-32 { background: #f67c5f; color: #fff; }
         .tile-64 { background: #f65e3b; color: #fff; }
-        .tile-128 { background: #edcf72; color: #fff; font-size: 18px; }
-        .tile-256 { background: #edcc61; color: #fff; font-size: 18px; }
-        .tile-512 { background: #edc850; color: #fff; font-size: 18px; }
-        .tile-1024 { background: #edc53f; color: #fff; font-size: 14px; }
-        .tile-2048 { background: #3b82f6; color: #fff; font-size: 14px; box-shadow: 0 0 20px #3b82f6; }
+        .tile-128 { background: #edcf72; color: #fff; }
+        .tile-2048 { background: #3b82f6; color: #fff; box-shadow: 0 0 20px #3b82f6; }
+        
+        .fs-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 100;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="hero-gradient">
@@ -100,38 +120,45 @@
     <section id="projects" class="pt-32 pb-20 px-6">
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-wrap items-center justify-center gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/5 w-fit mx-auto">
-                <button onclick="switchGame('dropper')" id="btnDropper" class="tab-btn active px-6 py-2 rounded-xl text-sm">Dropper</button>
-                <button onclick="switchGame('neon')" id="btnNeon" class="tab-btn px-6 py-2 rounded-xl text-sm">Survivor</button>
-                <button onclick="switchGame('rivals')" id="btnRivals" class="tab-btn px-6 py-2 rounded-xl text-sm">Rivals</button>
-                <button onclick="switchGame('2048')" id="btn2048" class="tab-btn px-6 py-2 rounded-xl text-sm">2048</button>
+                <button onclick="switchGame('breaker')" id="btnBreaker" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm">Brick Breaker</button>
+                <button onclick="switchGame('dropper')" id="btnDropper" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Dropper</button>
+                <button onclick="switchGame('neon')" id="btnNeon" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Survivor</button>
+                <button onclick="switchGame('rivals')" id="btnRivals" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Rivals</button>
+                <button onclick="switchGame('2048')" id="btn2048" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">2048</button>
             </div>
 
             <div id="gameContainer" class="game-wrapper shadow-2xl">
                 <canvas id="gameCanvas"></canvas>
                 <div id="game2048"><div class="grid-2048" id="grid2048"></div></div>
                 
+                <button class="fs-btn" onclick="toggleFS()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                </button>
+
                 <div id="gameUI" class="absolute inset-0 pointer-events-none flex items-center justify-center">
                     <div id="hud" class="hidden absolute top-0 w-full p-8 flex justify-between items-start text-white">
-                        <div class="bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
-                            <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Score</div>
-                            <div id="stat1Val" class="text-2xl font-black font-mono">0</div>
-                        </div>
-                        <div id="rivalScoreBox" class="hidden bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
-                            <div class="text-[10px] text-red-400 font-bold uppercase tracking-widest">Enemy</div>
-                            <div id="statEnemyVal" class="text-2xl font-black font-mono">0</div>
+                        <div class="flex gap-4">
+                            <div class="bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
+                                <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Score</div>
+                                <div id="stat1Val" class="text-2xl font-black font-mono">0</div>
+                            </div>
+                            <div id="levelBox" class="bg-black/80 px-5 py-3 rounded-xl border border-white/10 backdrop-blur-md">
+                                <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Level</div>
+                                <div id="levelVal" class="text-2xl font-black font-mono">1</div>
+                            </div>
                         </div>
                     </div>
 
                     <div id="start-menu" class="glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6 border-blue-500/30">
-                        <h1 id="menuTitle" class="text-3xl font-black mb-2 text-white uppercase">Neon Dropper</h1>
-                        <p id="menuDesc" class="text-xs text-blue-400 font-bold mb-8 uppercase tracking-[0.3em]">Ultra-fast Descent</p>
-                        <button class="w-full bg-blue-600 py-4 rounded-xl font-bold text-white hover:scale-105 transition-all" onclick="initCurrentGame()">LAUNCH</button>
+                        <h1 id="menuTitle" class="text-3xl font-black mb-2 text-white uppercase tracking-tighter">Brick Breaker</h1>
+                        <p id="menuDesc" class="text-xs text-blue-400 font-bold mb-8 uppercase tracking-[0.3em]">Extreme Arcade Edition</p>
+                        <button class="w-full bg-blue-600 py-4 rounded-xl font-bold text-white hover:scale-105 transition-all" onclick="initCurrentGame()">LAUNCH ENGINE</button>
                     </div>
 
                     <div id="death-menu" class="hidden glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6 border-red-500/30">
                         <h2 id="deathTitle" class="text-3xl font-black text-red-500 mb-2 uppercase tracking-tighter">TERMINATED</h2>
-                        <p class="text-gray-400 mb-6 font-mono tracking-widest">RESULT: <span id="finalScore" class="text-white font-bold">0</span></p>
-                        <button class="w-full bg-red-600 py-4 rounded-xl font-bold text-white transition-all transform hover:scale-105" onclick="initCurrentGame()">RETRY</button>
+                        <p class="text-gray-400 mb-6 font-mono tracking-widest uppercase">Metric: <span id="finalScore" class="text-white font-bold">0</span></p>
+                        <button class="w-full bg-red-600 py-4 rounded-xl font-bold text-white transition-all transform hover:scale-105" onclick="initCurrentGame()">REBOOT</button>
                     </div>
                 </div>
             </div>
@@ -148,11 +175,11 @@
         const deathTitle = document.getElementById('deathTitle');
         const grid2048 = document.getElementById('grid2048');
 
-        let currentGame = 'dropper';
+        let currentGame = 'breaker';
         let gameActive = false;
         let keys = {};
-        let score = 0, enemyScore = 0;
-        let player, entities = [], projectiles = [], frameCount = 0, cameraY = 0, speed = 0;
+        let score = 0, level = 1, frameCount = 0, cameraY = 0;
+        let player, entities = [], projectiles = [], powerups = [], bricks = [];
         let board2048 = [];
 
         function resize() {
@@ -161,6 +188,11 @@
         }
         window.addEventListener('resize', resize);
         resize();
+
+        function toggleFS() {
+            container.classList.toggle('fullscreen-mode');
+            setTimeout(resize, 100);
+        }
 
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
@@ -171,6 +203,7 @@
                 if (e.code === 'ArrowRight') move2048('right');
             }
             if (currentGame === 'dropper' && gameActive) player.dir *= -1;
+            if (e.code === 'Escape' && container.classList.contains('fullscreen-mode')) toggleFS();
         });
         window.addEventListener('keyup', e => keys[e.code] = false);
 
@@ -184,8 +217,9 @@
             document.getElementById('game2048').style.display = (type === '2048') ? 'flex' : 'none';
             canvas.style.display = (type === '2048') ? 'none' : 'block';
             
-            const titles = { dropper: "Neon Dropper", neon: "Neon Survivor", rivals: "Rivals 1v1", "2048": "2048 Puzzle" };
+            const titles = { breaker: "Brick Breaker", dropper: "Neon Dropper", neon: "Neon Survivor", rivals: "Rivals 1v1", "2048": "2048 Puzzle" };
             document.getElementById('menuTitle').innerText = titles[type];
+            resize();
         }
 
         function initCurrentGame() {
@@ -193,24 +227,40 @@
             deathMenu.classList.add('hidden');
             hud.classList.remove('hidden');
             gameActive = true;
-            score = 0; enemyScore = 0; frameCount = 0;
-            entities = []; projectiles = [];
-            document.getElementById('rivalScoreBox').classList.add('hidden');
+            score = 0; level = 1; frameCount = 0;
+            entities = []; projectiles = []; powerups = []; bricks = [];
 
-            if (currentGame === 'dropper') {
-                player = { x: canvas.width/2, y: 150, dir: 1 };
-                speed = 3.5; cameraY = 0;
+            if (currentGame === 'breaker') {
+                player = { x: canvas.width/2 - 50, w: 100, h: 12 };
+                entities = [{ x: canvas.width/2, y: canvas.height - 50, dx: 4, dy: -4, r: 6 }]; // ball
+                createBricks();
+            } else if (currentGame === 'dropper') {
+                player = { x: canvas.width/2, y: 150, dir: 1, speed: 3.5 };
+                cameraY = 0;
             } else if (currentGame === 'neon') {
                 player = { x: canvas.width/2, y: canvas.height/2, speed: 4 };
             } else if (currentGame === 'rivals') {
-                player = { x: 100, y: canvas.height/2 };
+                player = { x: 100, y: canvas.height/2, enemyScore: 0 };
                 entities.push({ x: canvas.width-100, y: canvas.height/2 });
-                document.getElementById('rivalScoreBox').classList.remove('hidden');
             } else if (currentGame === '2048') {
                 board2048 = Array(4).fill().map(() => Array(4).fill(0));
                 addTile2048(); addTile2048(); render2048();
             }
             if (currentGame !== '2048') requestAnimationFrame(gameLoop);
+        }
+
+        // --- Breaker Logic ---
+        function createBricks() {
+            const cols = 8;
+            const rows = Math.min(3 + level, 10);
+            const padding = 10;
+            const w = (canvas.width - padding*(cols+1)) / cols;
+            const h = 20;
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    bricks.push({ x: padding + c*(w+padding), y: 80 + r*(h+padding), w, h, active: true, color: `hsl(${r*45}, 70%, 50%)` });
+                }
+            }
         }
 
         // --- 2048 Logic ---
@@ -222,7 +272,6 @@
                 board2048[r][c] = Math.random() > 0.1 ? 2 : 4;
             }
         }
-
         function render2048() {
             grid2048.innerHTML = '';
             board2048.forEach(row => row.forEach(val => {
@@ -233,7 +282,6 @@
             }));
             document.getElementById('stat1Val').innerText = score;
         }
-
         function move2048(dir) {
             let oldBoard = JSON.stringify(board2048);
             const rotate = () => {
@@ -255,12 +303,11 @@
             else if(dir==='down'){ rotate(); slide(); rotate(); rotate(); rotate(); }
             if(oldBoard !== JSON.stringify(board2048)) { addTile2048(); render2048(); checkGameOver2048(); }
         }
-
         function checkGameOver2048() {
             let canMove = false;
             for(let r=0; r<4; r++) for(let c=0; c<4; c++) {
                 if(!board2048[r][c] || (r<3 && board2048[r][c]===board2048[r+1][c]) || (c<3 && board2048[r][c]===board2048[r][c+1])) canMove = true;
-                if(board2048[r][c] === 2048) { endGame("YOU WIN"); return; }
+                if(board2048[r][c] === 2048) { endGame("WINNER"); return; }
             }
             if(!canMove) endGame("GAME OVER");
         }
@@ -276,57 +323,94 @@
         function gameLoop() {
             if(!gameActive) return;
             ctx.fillStyle = '#050505'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            
-            if(currentGame === 'dropper') {
-                speed += 0.002; player.x += player.dir * (6 + speed/4); player.y += speed;
+
+            if(currentGame === 'breaker') {
+                if(keys['ArrowLeft'] && player.x > 0) player.x -= 8;
+                if(keys['ArrowRight'] && player.x < canvas.width - player.w) player.x += 8;
+                let ball = entities[0];
+                ball.x += ball.dx; ball.y += ball.dy;
+                if(ball.x < 0 || ball.x > canvas.width) ball.dx *= -1;
+                if(ball.y < 0) ball.dy *= -1;
+                if(ball.y > canvas.height) endGame();
+                if(ball.y > canvas.height - 30 && ball.x > player.x && ball.x < player.x + player.w) {
+                    ball.dy = -Math.abs(ball.dy);
+                    ball.dx = ((ball.x - (player.x + player.w/2)) / (player.w/2)) * 7;
+                }
+                let count = 0;
+                bricks.forEach(b => {
+                    if(!b.active) return;
+                    count++;
+                    if(ball.x > b.x && ball.x < b.x + b.w && ball.y > b.y && ball.y < b.y + b.h) {
+                        b.active = false; ball.dy *= -1; score += 10;
+                        if(Math.random() < 0.1) powerups.push({x: b.x + b.w/2, y: b.y, type: Math.random() > 0.5 ? 'W' : 'S'});
+                    }
+                });
+                if(count === 0) { level++; if(level > 50) endGame("LEGEND"); else createBricks(); }
+                powerups.forEach((p, i) => {
+                    p.y += 3;
+                    if(p.y > canvas.height - 25 && p.x > player.x && p.x < player.x + player.w) {
+                        if(p.type === 'W') player.w = Math.min(250, player.w + 30);
+                        if(p.type === 'S') { ball.dx *= 1.1; ball.dy *= 1.1; }
+                        powerups.splice(i, 1);
+                    }
+                    ctx.fillStyle = p.type === 'W' ? '#3b82f6' : '#ef4444';
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI*2); ctx.fill();
+                });
+                ctx.fillStyle = '#3b82f6'; ctx.fillRect(player.x, canvas.height - 20, player.w, player.h);
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+                bricks.forEach(b => { if(b.active) { ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h); }});
+            }
+            else if(currentGame === 'dropper') {
+                player.speed += 0.002; player.x += player.dir * (6 + player.speed/4); player.y += player.speed;
                 cameraY = player.y - 150;
                 if(player.x < 15 || player.x > canvas.width-15) endGame();
-                if(entities.length < 5) entities.push({y: entities.length ? entities[entities.length-1].y+250 : 600, cx: 100+Math.random()*(canvas.width-200), gap: 140});
-                entities.forEach((o,i) => {
+                if(bricks.length < 5) bricks.push({y: bricks.length ? bricks[bricks.length-1].y+250 : 600, cx: 100+Math.random()*(canvas.width-200), gap: 140});
+                bricks.forEach((o,i) => {
                     if(Math.abs(player.y-o.y) < 15 && (player.x < o.cx-o.gap/2 || player.x > o.cx+o.gap/2)) endGame();
-                    if(o.y < player.y-200) entities.splice(i,1);
+                    if(o.y < player.y-200) bricks.splice(i,1);
                 });
                 score = Math.floor(player.y/10);
                 ctx.save(); ctx.translate(0, -cameraY);
-                ctx.fillStyle = '#ef4444'; entities.forEach(o => { ctx.fillRect(0, o.y-10, o.cx-o.gap/2, 20); ctx.fillRect(o.cx+o.gap/2, o.y-10, canvas.width, 20); });
+                ctx.fillStyle = '#ef4444'; bricks.forEach(o => { ctx.fillRect(0, o.y-10, o.cx-o.gap/2, 20); ctx.fillRect(o.cx+o.gap/2, o.y-10, canvas.width, 20); });
                 ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 10, 0, Math.PI*2); ctx.fill(); ctx.restore();
-            } 
+            }
             else if(currentGame === 'neon') {
                 if(keys['ArrowUp']) player.y -= player.speed; if(keys['ArrowDown']) player.y += player.speed;
                 if(keys['ArrowLeft']) player.x -= player.speed; if(keys['ArrowRight']) player.x += player.speed;
                 if(frameCount % 60 === 0) entities.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height});
                 entities.forEach((e,i) => {
-                    let d = Math.hypot(e.x-player.x, e.y-player.y);
-                    if(d < 20) endGame();
+                    if(Math.hypot(e.x-player.x, e.y-player.y) < 20) endGame();
                     e.x += (player.x-e.x)*0.01; e.y += (player.y-e.y)*0.01;
-                    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(e.x, e.y, 10, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(e.x, e.y, 8, 0, Math.PI*2); ctx.fill();
                 });
                 score = Math.floor(frameCount/10);
-                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 15, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 12, 0, Math.PI*2); ctx.fill();
             }
             else if(currentGame === 'rivals') {
-                if(keys['ArrowUp']) player.y -= 6; if(keys['ArrowDown']) player.y += 6;
-                let ai = entities[0]; ai.y += Math.sin(frameCount/15)*7;
+                if(keys['ArrowUp']) player.y -= 7; if(keys['ArrowDown']) player.y += 7;
+                let ai = entities[0]; ai.y += Math.sin(frameCount/15)*8;
                 if(keys['Space'] && frameCount % 12 === 0) projectiles.push({x: player.x, y: player.y, vx: 12, owner: 'p'});
-                if(frameCount % 45 === 0) projectiles.push({x: ai.x, y: ai.y, vx: -10, owner: 'e'});
+                if(frameCount % 40 === 0) projectiles.push({x: ai.x, y: ai.y, vx: -10, owner: 'e'});
                 projectiles.forEach((p,i) => {
                     p.x += p.vx;
                     if(p.owner==='p' && Math.hypot(p.x-ai.x, p.y-ai.y) < 25) { score++; p.dead=true; }
-                    if(p.owner==='e' && Math.hypot(p.x-player.x, p.y-player.y) < 20) { enemyScore++; p.dead=true; }
+                    if(p.owner==='e' && Math.hypot(p.x-player.x, p.y-player.y) < 20) { player.enemyScore++; p.dead=true; }
                 });
                 projectiles = projectiles.filter(p => !p.dead && p.x > 0 && p.x < canvas.width);
                 ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(player.x, player.y, 15, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(ai.x, ai.y, 20, 0, Math.PI*2); ctx.fill();
                 projectiles.forEach(p => { ctx.fillStyle = p.owner==='p'?'#3b82f6':'#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
-                document.getElementById('statEnemyVal').innerText = enemyScore;
-                if(score >= 100) endGame("VICTORY"); if(enemyScore >= 100) endGame("TERMINATED");
+                if(score >= 100) endGame("VICTORY"); if(player.enemyScore >= 100) endGame("DEFEATED");
             }
+
             document.getElementById('stat1Val').innerText = score;
+            document.getElementById('levelVal').innerText = (currentGame === 'rivals') ? player.enemyScore : level;
+            document.getElementById('stat2Label').innerText = (currentGame === 'rivals') ? "ENEMY" : "LEVEL";
             frameCount++; requestAnimationFrame(gameLoop);
         }
-        switchGame('dropper');
+
+        switchGame('breaker');
     </script>
 </body>
 </html>
-
     
