@@ -1,603 +1,505 @@
 <!DOCTYPE html>
-<html lang="en">
+html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcade .io | Multi-Game Hub</title>
+    <title>Neon Parkour Pro | Mega World Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #030303;
-            color: #e5e7eb;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0; padding: 0;
-            overflow-x: hidden;
+        body { background: #050505; margin: 0; overflow: hidden; font-family: 'JetBrains Mono', monospace; transition: background 1s ease; }
+        canvas { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+        .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        .menu-overlay { 
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: auto; z-index: 100;
         }
-
-        .hero-gradient {
-            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 50%);
+        .btn {
+            background: #00f2ff; color: #000; padding: 12px 30px; border-radius: 4px;
+            font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
+            cursor: pointer; transition: 0.2s; border: none; margin-top: 10px;
         }
-
-        .game-wrapper {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            background: #000;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            border: 2px solid #1f2937;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .canvas-area {
-            flex-grow: 1;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .arcade-bottom-div {
-            background: #111;
-            height: 80px;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            border-top: 2px solid #1f2937;
-        }
-
-        .arcade-bottom-div img.game-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            margin-right: 15px;
-        }
-
-        .text-container { flex-grow: 1; }
-        .website-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #fff; line-height: 1; }
-        .developer-name { font-size: 12px; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-
-        .buttons-container { display: flex; gap: 15px; }
-        .buttons-container img {
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            filter: invert(1);
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-        .buttons-container img:hover { opacity: 1; }
-
-        canvas { display: block; image-rendering: auto; }
-
-        .tab-btn { color: #9ca3af; font-weight: 600; transition: all 0.2s; border: 1px solid transparent; }
-        .tab-btn.active { background-color: #3b82f6; color: white; border-color: #60a5fa; }
-
-        .glass-card {
-            background: rgba(15, 15, 20, 0.9);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 1.5rem;
-        }
-
-        /* 2048 specific styling */
-        #game2048 {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%; height: 100%;
-        }
-        .grid-2048 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            background: #222;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .tile {
-            width: 60px; height: 60px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; border-radius: 4px; font-size: 18px;
-            background: rgba(255,255,255,0.1);
-        }
-        .tile-2 { background: #eee4da; color: #776e65; }
-        .tile-4 { background: #ede0c8; color: #776e65; }
-        .tile-8 { background: #f2b179; color: #fff; }
-        .tile-16 { background: #f59563; color: #fff; }
-        .tile-32 { background: #f67c5f; color: #fff; }
-        .tile-64 { background: #f65e3b; color: #fff; }
-        .tile-128 { background: #edcf72; color: #fff; }
-        .tile-2048 { background: #3b82f6; color: #fff; box-shadow: 0 0 15px #3b82f6; }
-
-        .navbar { background: rgba(0,0,0,0.8); height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 1px solid #222; }
+        .btn:hover:not(:disabled) { background: #fff; transform: scale(1.05); box-shadow: 0 0 20px #00f2ff; }
+        .btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-ghost { background: transparent; color: #00f2ff; border: 2px solid #00f2ff; margin-top: 10px; }
+        .controls-hint { color: #888; font-size: 11px; margin-top: 25px; text-align: center; line-height: 1.6; }
+        .hidden { display: none !important; }
         
-        /* Health Bar Container */
-        #health-bar-container {
-            width: 200px;
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            overflow: hidden;
-            margin-top: 5px;
-            border: 1px solid rgba(255,255,255,0.1);
+        .world-alert {
+            position: absolute; top: 20%; width: 100%; text-align: center;
+            font-size: 4rem; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            animation: fadeOut 3s forwards; pointer-events: none;
         }
-        #health-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ef4444, #f87171);
-            width: 100%;
-            transition: width 0.3s ease;
+        @keyframes fadeOut { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+        
+        #nav-screen { padding: 40px; }
+        .nav-grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+            gap: 15px; width: 80%; max-height: 50vh; overflow-y: auto; padding-right: 10px;
         }
+        .nav-grid::-webkit-scrollbar { width: 4px; }
+        .nav-grid::-webkit-scrollbar-thumb { background: #00f2ff; border-radius: 10px; }
+        
+        .world-card {
+            background: #111; border: 1px solid #333; padding: 15px; cursor: pointer;
+            transition: 0.3s; border-radius: 8px; position: relative;
+        }
+        .world-card:hover:not(.locked) { border-color: #00f2ff; background: #1a1a1a; transform: translateY(-3px); }
+        .world-card.active { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.3); }
+        .world-card.locked { opacity: 0.5; cursor: not-allowed; grayscale: 1; }
+        .lock-icon { position: absolute; top: 10px; right: 10px; font-size: 12px; color: #ff0055; }
+        
+        .level-strip {
+            display: flex; gap: 10px; overflow-x: auto; width: 80%; padding: 10px; margin-top: 10px;
+        }
+        .level-btn {
+            min-width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+            background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; cursor: pointer;
+        }
+        .level-btn.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+        .level-btn:hover:not(.locked) { background: #00f2ff; color: #000; }
     </style>
 </head>
-<body class="hero-gradient">
+<body>
 
-    <nav class="navbar fixed top-0 w-full z-50">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">A</div>
-            <span class="text-xl font-extrabold tracking-tighter">ARCADE .IO</span>
-        </div>
-        <div class="hidden md:flex gap-8 text-sm font-bold uppercase tracking-widest text-gray-400">
-            <a href="#" class="hover:text-white transition">Popular</a>
-            <a href="#" class="hover:text-white transition">Games</a>
-            <a href="#" class="hover:text-white transition text-blue-500">Settings</a>
-        </div>
-    </nav>
+    <canvas id="canvas"></canvas>
 
-    <section class="pt-32 pb-20 px-6">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex flex-wrap items-center justify-center gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/5 w-fit mx-auto">
-                <button onclick="switchGame('breaker')" id="btnBreaker" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm">Brick Breaker</button>
-                <button onclick="switchGame('rocket')" id="btnRocket" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Rocket League</button>
-                <button onclick="switchGame('dropper')" id="btnDropper" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Dropper</button>
-                <button onclick="switchGame('neon')" id="btnNeon" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Survivor</button>
-                <button onclick="switchGame('rivals')" id="btnRivals" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Rivals</button>
-                <button onclick="switchGame('2048')" id="btn2048" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">2048</button>
-            </div>
-
-            <div id="gameContainer" class="game-wrapper shadow-2xl">
-                <div class="canvas-area">
-                    <canvas id="gameCanvas"></canvas>
-                    <div id="game2048"><div class="grid-2048" id="grid2048"></div></div>
-                    
-                    <div id="gameUI" class="absolute inset-0 pointer-events-none flex items-center justify-center">
-                        <div id="hud" class="hidden absolute top-0 w-full p-6 flex justify-between items-start text-white">
-                            <div class="flex gap-4">
-                                <div class="bg-black/80 px-4 py-2 rounded-lg border border-white/10 backdrop-blur-md">
-                                    <div id="stat1Label" class="text-[10px] text-blue-400 font-bold uppercase">Score</div>
-                                    <div id="stat1Val" class="text-xl font-black font-mono">0</div>
-                                </div>
-                                <div id="levelBox" class="bg-black/80 px-4 py-2 rounded-lg border border-white/10 backdrop-blur-md">
-                                    <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Level</div>
-                                    <div id="levelVal" class="text-xl font-black font-mono">1</div>
-                                    <div id="health-bar-container" class="hidden">
-                                        <div id="health-bar-fill"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="start-menu" class="glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6">
-                            <h1 id="menuTitle" class="text-4xl font-black mb-2 text-white uppercase font-['Bebas_Neue'] tracking-wide">Brick Breaker</h1>
-                            <p class="text-xs text-blue-500 font-bold mb-8 uppercase tracking-[0.3em]">Arcade .io Original</p>
-                            <button class="w-full bg-blue-600 py-4 rounded-xl font-bold text-white hover:scale-105 transition-all" onclick="initCurrentGame()">PLAY NOW</button>
-                        </div>
-
-                        <div id="death-menu" class="hidden glass-card p-10 text-center pointer-events-auto max-w-sm w-full mx-6">
-                            <h2 id="deathTitle" class="text-3xl font-black text-red-500 mb-2 uppercase">GAME OVER</h2>
-                            <p class="text-gray-400 mb-6 font-mono">SCORE: <span id="finalScore" class="text-white font-bold">0</span></p>
-                            <button class="w-full bg-white py-4 rounded-xl font-bold text-black transition-all transform hover:scale-105" onclick="initCurrentGame()">RETRY</button>
-                        </div>
+    <div id="ui">
+        <div id="hud" class="hidden">
+            <div class="absolute top-6 left-6 hud-text">
+                <div id="world-name" class="text-xs text-cyan-400 font-bold uppercase tracking-widest">WORLD 1: NEON CITY</div>
+                <div class="flex items-end gap-4">
+                    <div>
+                        <div class="text-[10px] opacity-50">LEVEL</div>
+                        <div id="lvl-num" class="text-3xl font-black">1</div>
                     </div>
-                </div>
-
-                <div class="arcade-bottom-div">
-                    <img src="https://api.dicebear.com/7.x/shapes/svg?seed=arcade" alt="Logo" class="game-icon">
-                    <div class="text-container">
-                        <div id="displayGameTitle" class="website-name">Brick Breaker</div>
-                        <div class="developer-name">BY: ARCADE .IO CREATOR</div>
-                    </div>
-                    <div class="buttons-container">
-                        <img id="refresh-btn" src="https://cdn-icons-png.flaticon.com/512/560/560512.png" alt="Refresh" onclick="initCurrentGame()">
-                        <img id="fullscreen-btn" src="https://cdn-icons-png.flaticon.com/512/2089/2089670.png" alt="Fullscreen" onclick="toggleFS()">
+                    <div>
+                        <div class="text-[10px] opacity-50">DISTANCE</div>
+                        <div id="dist" class="text-3xl font-black">000m</div>
                     </div>
                 </div>
             </div>
+            <div class="absolute top-6 right-6 hud-text text-right flex flex-col items-end gap-2">
+                <button class="btn !p-2 !mt-0 !text-[10px] pointer-events-auto" onclick="openNav()">MENU</button>
+                <div>
+                    <div class="text-[10px] opacity-50">MOMENTUM</div>
+                    <div id="speed" class="text-3xl font-black text-cyan-400">0%</div>
+                </div>
+            </div>
         </div>
-    </section>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('gameContainer');
-        const startMenu = document.getElementById('start-menu');
-        const deathMenu = document.getElementById('death-menu');
-        const hud = document.getElementById('hud');
-        const grid2048 = document.getElementById('grid2048');
-        const healthBarContainer = document.getElementById('health-bar-container');
-        const healthBarFill = document.getElementById('health-bar-fill');
-        
-        let currentGame = 'breaker';
-        let gameActive = false;
-        let keys = {};
-        let score = 0, level = 1, lives = 3, frameCount = 0;
-        let player, entities = [], projectiles = [], bricks = [], powerups = [];
-        let board2048 = [];
+        <!-- MAIN MENU -->
+        <div id="menu" class="menu-overlay">
+            <h1 class="text-6xl font-black text-white mb-2 italic tracking-tighter hud-text">PARKOUR PRO</h1>
+            <p id="progression-stats" class="text-cyan-400 font-bold tracking-[0.2em] mb-4">UNLOCK THE MULTIVERSE</p>
+            <button class="btn" onclick="continueGame()">Continue Journey</button>
+            <button class="btn btn-ghost" onclick="openNav()">Select World / Level</button>
+            <div class="controls-hint uppercase">
+                WASD / Arrows to Move • W/Up/Space to Jump<br>
+                S/Down to Slide • Reach 2500m to unlock next Level
+            </div>
+        </div>
 
-        function resize() {
-            const area = document.querySelector('.canvas-area');
-            canvas.width = area.clientWidth;
-            canvas.height = area.clientHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+        <!-- NAVIGATION SCREEN -->
+        <div id="nav-screen" class="menu-overlay hidden">
+            <h2 class="text-4xl font-black text-white mb-4 hud-text uppercase">Explore Mega World</h2>
+            <div id="world-list" class="nav-grid"></div>
+            <div id="level-label" class="text-xs text-cyan-400 mt-6 font-bold uppercase tracking-widest">Select Level</div>
+            <div id="level-list" class="level-strip"></div>
+            <div class="flex gap-4 mt-8">
+                <button class="btn btn-ghost" onclick="closeNav()">Back</button>
+                <button class="btn" id="start-from-nav" onclick="startGameFromNav()">Enter World</button>
+            </div>
+        </div>
 
-        function toggleFS() {
-            if (!document.fullscreenElement) {
-                container.requestFullscreen().catch(() => {});
-            } else {
-                document.exitFullscreen();
+        <!-- WIN SCREEN -->
+        <div id="win-screen" class="menu-overlay hidden">
+            <h2 class="text-5xl font-black text-cyan-400 mb-2 hud-text">LEVEL CLEAR!</h2>
+            <div id="win-stats" class="text-white mb-8">Next Level Unlocked</div>
+            <button class="btn" onclick="nextLevel()">Next Level</button>
+            <button class="btn btn-ghost" onclick="openNav()">Menu</button>
+        </div>
+
+        <!-- DEATH SCREEN -->
+        <div id="death-screen" class="menu-overlay hidden">
+            <h2 class="text-5xl font-black text-red-500 mb-2 hud-text">WIPED OUT</h2>
+            <div id="final-stats" class="text-white mb-8">World 1 - Level 1</div>
+            <button class="btn !bg-red-500" onclick="retryLevel()">Try Again</button>
+            <button class="btn btn-ghost" onclick="openNav()">Select Level</button>
+        </div>
+    </div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const distEl = document.getElementById('dist');
+const speedEl = document.getElementById('speed');
+const lvlEl = document.getElementById('lvl-num');
+const worldNameEl = document.getElementById('world-name');
+
+let state = 'MENU';
+let player, platforms = [], obstacles = [];
+let camera = { x: 0, y: 0 };
+let keys = {};
+let gameTick = 0;
+
+const WORLDS = [
+    { name: "Neon City", bg: "#050505", accent: "#00f2ff", hazard: "#ff0055" },
+    { name: "Magma Core", bg: "#1a0500", accent: "#ff4400", hazard: "#ffff00" },
+    { name: "Emerald Forest", bg: "#000f05", accent: "#00ff66", hazard: "#ff00ff" },
+    { name: "Deep Space", bg: "#00051a", accent: "#7700ff", hazard: "#00ffff" },
+    { name: "Frozen Waste", bg: "#0a1520", accent: "#88ccff", hazard: "#ff5500" },
+    { name: "Cyber Desert", bg: "#1a1500", accent: "#ffcc00", hazard: "#ff0000" },
+    { name: "Toxic Sewers", bg: "#0a1000", accent: "#ccff00", hazard: "#ff00ff" },
+    { name: "Virtual Void", bg: "#000000", accent: "#ffffff", hazard: "#555555" },
+    { name: "Gold Temple", bg: "#151000", accent: "#ffd700", hazard: "#000000" },
+    { name: "Coral Reef", bg: "#001015", accent: "#00ffcc", hazard: "#ff6600" },
+    { name: "Cloud Spire", bg: "#151a25", accent: "#ffffff", hazard: "#4444ff" },
+    { name: "Obsidian Peak", bg: "#0a0a0a", accent: "#ff0044", hazard: "#888888" },
+    { name: "Electric Dreams", bg: "#0a0015", accent: "#ff00ff", hazard: "#00ff00" },
+    { name: "Iron Fortress", bg: "#151515", accent: "#aaaaaa", hazard: "#ff4400" },
+    { name: "Acid Lake", bg: "#050a00", accent: "#00ff00", hazard: "#ffaa00" },
+    { name: "Ruby Chasm", bg: "#100000", accent: "#ff0000", hazard: "#ffffff" },
+    { name: "Chrome Valley", bg: "#1a1a1a", accent: "#00e5ff", hazard: "#ff1493" },
+    { name: "Shadow Realm", bg: "#020202", accent: "#333333", hazard: "#ff0000" },
+    { name: "Solar Flare", bg: "#251000", accent: "#ffa500", hazard: "#ffffff" },
+    { name: "Midnight Harbor", bg: "#000010", accent: "#4169e1", hazard: "#ff4500" },
+    { name: "Copper Mines", bg: "#100800", accent: "#b87333", hazard: "#00ffff" },
+    { name: "The Singularity", bg: "#000000", accent: "#ffffff", hazard: "#ff00ff" }
+];
+
+const LEVELS_PER_WORLD = 300;
+const LEVEL_LENGTH = 25000; // 2500m in internal coordinates (x/10)
+
+// PROGRESSION STATE
+let progress = {
+    maxLevel: 1, // Global level (1 to 6600)
+};
+
+// Load progress
+const saved = localStorage.getItem('parkourProSave');
+if (saved) progress = JSON.parse(saved);
+
+let currentWorldIndex = 0;
+let currentLevel = 1;
+let navWorld = 0;
+let navLevel = 1;
+
+const GRAVITY = 0.5;
+const FRICTION = 0.82;
+const MAX_RUN = 8.5;
+const JUMP_FORCE = -13.5;
+
+class Player {
+    constructor() { this.reset(); }
+    reset() {
+        this.x = 200; this.y = 300;
+        this.vx = 0; this.vy = 0;
+        this.w = 24; this.h = 48;
+        this.grounded = false;
+        this.coyoteTime = 0;
+        this.wallSliding = 0;
+        this.sliding = false;
+        this.ledgeGrabbing = false;
+        this.distance = 0;
+        this.rot = 0;
+        this.finished = false;
+    }
+
+    update() {
+        if (this.finished) return;
+
+        if (this.ledgeGrabbing) {
+            this.vx = 0; this.vy = 0;
+            if (keys['KeyW'] || keys['ArrowUp'] || keys['Space']) {
+                this.y -= 55; this.ledgeGrabbing = false; this.vy = -9;
             }
-            setTimeout(resize, 200);
+            if (keys['KeyS'] || keys['ArrowDown']) this.ledgeGrabbing = false;
+            return;
         }
 
-        window.addEventListener('keydown', e => {
-            keys[e.code] = true;
-            if(currentGame === '2048' && gameActive) {
-                if(e.code === 'ArrowUp') move2048('up');
-                if(e.code === 'ArrowDown') move2048('down');
-                if(e.code === 'ArrowLeft') move2048('left');
-                if(e.code === 'ArrowRight') move2048('right');
+        let inputX = 0;
+        if (keys['KeyA'] || keys['ArrowLeft']) inputX -= 1;
+        if (keys['KeyD'] || keys['ArrowRight']) inputX += 1;
+
+        if (inputX !== 0) {
+            if (!this.sliding) {
+                const moveMult = this.grounded ? 1 : 0.8; 
+                this.vx += inputX * 1.0 * moveMult;
             }
-            if(currentGame === 'dropper' && gameActive) player.dir *= -1;
+        } else {
+            this.vx *= this.grounded ? FRICTION : 0.95;
+        }
+
+        const limit = this.sliding ? 12 : MAX_RUN;
+        this.vx = Math.max(-limit, Math.min(limit, this.vx));
+
+        if ((keys['KeyS'] || keys['ArrowDown']) && this.grounded && Math.abs(this.vx) > 1) {
+            if (!this.sliding) { this.sliding = true; this.h = 24; this.y += 24; }
+        } else if (this.sliding) {
+            this.h = 48; this.y -= 24; this.sliding = false;
+        }
+
+        this.vy += (this.wallSliding !== 0 && this.vy > 0) ? GRAVITY * 0.25 : GRAVITY;
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.grounded) this.coyoteTime = 8; else this.coyoteTime--;
+        this.grounded = false;
+        this.wallSliding = 0;
+
+        platforms.forEach(p => {
+            if (this.x + this.w > p.x && this.x < p.x + p.w) {
+                if (this.vy > 0 && this.y + this.h > p.y && this.y + this.h < p.y + p.h + this.vy + 1) {
+                    this.y = p.y - this.h; this.vy = 0; this.grounded = true;
+                }
+            }
+            if (this.y + this.h > p.y + 4 && this.y < p.y + p.h) {
+                if (this.vx > 0 && this.x + this.w > p.x && this.x + this.w < p.x + 15) {
+                    if (this.vy > 0 && this.y < p.y + 15) { this.ledgeGrabbing = true; this.y = p.y; this.x = p.x - this.w; }
+                    else { this.x = p.x - this.w; this.vx = 0; }
+                } else if (this.vx < 0 && this.x < p.x + p.w && this.x > p.x + p.w - 15) {
+                    if (this.vy > 0 && this.y < p.y + 15) { this.ledgeGrabbing = true; this.y = p.y; this.x = p.x + p.w; }
+                    else { this.x = p.x + p.w; this.vx = 0; }
+                }
+            }
         });
-        window.addEventListener('keyup', e => keys[e.code] = false);
 
-        function switchGame(type) {
-            currentGame = type;
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.id === 'btn'+type.charAt(0).toUpperCase()+type.slice(1)));
-            startMenu.classList.remove('hidden');
-            deathMenu.classList.add('hidden');
-            hud.classList.add('hidden');
-            gameActive = false;
-            
-            document.getElementById('game2048').style.display = (type === '2048') ? 'flex' : 'none';
-            canvas.style.display = (type === '2048') ? 'none' : 'block';
-            healthBarContainer.classList.add('hidden');
+        obstacles.forEach(o => {
+            let ox = o.x;
+            if (o.type === 'saw') ox += Math.sin(gameTick * 0.05) * o.range;
+            if (this.x + this.w - 4 > ox && this.x + 4 < ox + o.w && this.y + this.h > o.y && this.y + 4 < o.y + o.h) die();
+        });
 
-            const titles = { breaker: "Brick Breaker", rocket: "2D Rocket League", dropper: "Neon Dropper", neon: "Survivor", rivals: "Rivals 1v1", "2048": "2048 Puzzle" };
-            document.getElementById('menuTitle').innerText = titles[type];
-            document.getElementById('displayGameTitle').innerText = titles[type];
-            resize();
+        if ((keys['KeyW'] || keys['ArrowUp'] || keys['Space'])) {
+            if (this.coyoteTime > 0) { this.vy = JUMP_FORCE; this.grounded = false; this.coyoteTime = 0; }
+            keys['Space'] = false; keys['KeyW'] = false; keys['ArrowUp'] = false;
         }
 
-        function initCurrentGame() {
-            startMenu.classList.add('hidden');
-            deathMenu.classList.add('hidden');
-            hud.classList.remove('hidden');
-            gameActive = true;
-            score = 0; level = 1; lives = 3; frameCount = 0;
-            entities = []; bricks = []; projectiles = []; powerups = [];
-
-            if (currentGame === 'breaker') {
-                player = { x: canvas.width/2 - 50, w: 100, h: 12 };
-                entities = [{ x: canvas.width/2, y: canvas.height - 50, dx: 5, dy: -5, r: 7 }];
-                createBricks();
-            } else if (currentGame === 'rocket') {
-                player = { x: 100, y: canvas.height/2, vx: 0, vy: 0, r: 18, score: 0 };
-                entities = [
-                    { x: canvas.width/2, y: canvas.height/2, vx: 0, vy: 0, r: 28, type: 'ball' }, 
-                    { x: canvas.width-100, y: canvas.height/2, vx: 0, vy: 0, r: 18, type: 'ai', score: 0 }
-                ];
-            } else if (currentGame === 'dropper') {
-                player = { x: canvas.width/2, y: 150, dir: 1, speed: 4 };
-            } else if (currentGame === 'neon') {
-                player = { 
-                    x: canvas.width/2, y: canvas.height/2, speed: 4, 
-                    hp: 100, maxHp: 100, 
-                    fireRate: 30, lastShot: 0, xp: 0, xpToNext: 100 
-                };
-                healthBarContainer.classList.remove('hidden');
-            } else if (currentGame === 'rivals') {
-                player = { x: 80, y: canvas.height/2, enemyScore: 0 };
-                entities = [{ x: canvas.width - 80, y: canvas.height/2 }];
-            } else if (currentGame === '2048') {
-                board2048 = Array(4).fill().map(() => Array(4).fill(0));
-                addTile2048(); addTile2048(); render2048();
-            }
-            if (currentGame !== '2048') requestAnimationFrame(gameLoop);
+        this.distance = Math.max(this.distance, Math.floor(this.x / 10));
+        
+        // WIN CONDITION: Reach target distance
+        if (this.distance >= 2500) {
+            this.finished = true;
+            win();
         }
 
-        function spawnEnemy() {
-            let side = Math.floor(Math.random()*4);
-            let ex, ey;
-            if(side === 0) { ex = Math.random()*canvas.width; ey = -40; }
-            else if(side === 1) { ex = Math.random()*canvas.width; ey = canvas.height+40; }
-            else if(side === 2) { ex = -40; ey = Math.random()*canvas.height; }
-            else { ex = canvas.width+40; ey = Math.random()*canvas.height; }
+        if (this.y > 2000) die();
+    }
 
-            let isMiniBoss = (level % 10 === 0);
-            let isMegaBoss = (level === 149);
-            
-            let enemy = {
-                x: ex, y: ey, 
-                speed: 1.5 + (level * 0.02), 
-                hp: isMegaBoss ? 5000 : (isMiniBoss ? 200 : 1), 
-                maxHp: isMegaBoss ? 5000 : (isMiniBoss ? 200 : 1),
-                r: isMegaBoss ? 60 : (isMiniBoss ? 25 : 10),
-                type: isMegaBoss ? 'mega' : (isMiniBoss ? 'mini' : 'grunt'),
-                color: isMegaBoss ? '#facc15' : (isMiniBoss ? '#a855f7' : '#ef4444')
-            };
-            entities.push(enemy);
+    draw() {
+        ctx.save();
+        ctx.translate(this.x + this.w/2, this.y + this.h/2);
+        if (!this.grounded) this.rot += this.vx * 0.05; else this.rot = 0;
+        ctx.rotate(this.rot);
+        ctx.shadowBlur = 15; ctx.shadowColor = WORLDS[currentWorldIndex].accent;
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+        if (this.sliding) ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h);
+        else {
+            ctx.beginPath(); ctx.arc(0, -15, 6, 0, Math.PI*2);
+            ctx.moveTo(0, -10); ctx.lineTo(0, 10); ctx.moveTo(-10, 0); ctx.lineTo(10, 0);
+            ctx.moveTo(0, 10); ctx.lineTo(-8, 24); ctx.moveTo(0, 10); ctx.lineTo(8, 24);
+            ctx.stroke();
         }
+        ctx.restore();
+    }
+}
 
-        function createBricks() {
-            const cols = 8; const rows = Math.min(3 + level, 8);
-            const padding = 10;
-            const w = (canvas.width - padding*(cols+1)) / cols;
-            const h = 22;
-            bricks = [];
-            for(let r=0; r<rows; r++) {
-                for(let c=0; c<cols; c++) {
-                    bricks.push({ x: padding + c*(w+padding), y: 60 + r*(h+padding), w, h, active: true, color: `hsl(${r*40 + 200}, 80%, 50%)` });
-                }
-            }
+function saveProgress() {
+    localStorage.setItem('parkourProSave', JSON.stringify(progress));
+}
+
+function win() {
+    state = 'WIN';
+    const currentGlobal = (currentWorldIndex * LEVELS_PER_WORLD) + currentLevel;
+    if (currentGlobal === progress.maxLevel) {
+        progress.maxLevel++;
+        saveProgress();
+    }
+    document.getElementById('win-screen').classList.remove('hidden');
+    document.getElementById('win-stats').innerText = `World ${currentWorldIndex+1} - Level ${currentLevel} CLEARED!`;
+}
+
+function nextLevel() {
+    currentLevel++;
+    if (currentLevel > LEVELS_PER_WORLD) {
+        currentLevel = 1;
+        currentWorldIndex++;
+    }
+    document.getElementById('win-screen').classList.add('hidden');
+    startGameFromParams(currentWorldIndex, currentLevel);
+}
+
+function retryLevel() {
+    document.getElementById('death-screen').classList.add('hidden');
+    startGameFromParams(currentWorldIndex, currentLevel);
+}
+
+function continueGame() {
+    const world = Math.floor((progress.maxLevel - 1) / LEVELS_PER_WORLD);
+    const level = ((progress.maxLevel - 1) % LEVELS_PER_WORLD) + 1;
+    startGameFromParams(world, level);
+}
+
+function startGameFromNav() {
+    startGameFromParams(navWorld, navLevel);
+}
+
+function startGameFromParams(wIdx, lNum) {
+    currentWorldIndex = wIdx;
+    currentLevel = lNum;
+    player = new Player();
+    platforms = [{ x: 0, y: 500, w: 1000, h: 50 }];
+    obstacles = [];
+    generateChunk(1000);
+    state = 'PLAY';
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('nav-screen').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    lvlEl.innerText = currentLevel;
+    announceWorld();
+}
+
+function generateChunk(startX) {
+    let x = startX;
+    const world = WORLDS[currentWorldIndex];
+    const difficulty = 1 + (currentWorldIndex * 0.2) + (currentLevel / 100);
+
+    for (let i = 0; i < 20; i++) {
+        let w = (200 + Math.random() * 400);
+        let y = 450 + (Math.random() - 0.5) * 400;
+        platforms.push({ x, y, w, h: 40 });
+        
+        if (Math.random() < 0.3) {
+            obstacles.push({ type: 'spike', x: x + w/2 - 15, y: y - 20, w: 30, h: 20 });
         }
+        x += w + 120 + (Math.random() * 100 * difficulty);
+    }
+    // Finish Platform at 25000 units
+    platforms.push({ x: 25000, y: 400, w: 500, h: 100, finish: true });
+}
 
-        function addTile2048() {
-            let empty = [];
-            for(let r=0; r<4; r++) for(let c=0; c<4; c++) if(!board2048[r][c]) empty.push({r,c});
-            if(empty.length) {
-                let {r,c} = empty[Math.floor(Math.random()*empty.length)];
-                board2048[r][c] = Math.random() > 0.1 ? 2 : 4;
-            }
+function openNav() {
+    state = 'NAV';
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('death-screen').classList.add('hidden');
+    document.getElementById('win-screen').classList.add('hidden');
+    document.getElementById('nav-screen').classList.remove('hidden');
+    
+    renderWorldNav();
+}
+
+function renderWorldNav() {
+    const worldList = document.getElementById('world-list');
+    worldList.innerHTML = '';
+    WORLDS.forEach((w, i) => {
+        const firstLevelOfWorld = (i * LEVELS_PER_WORLD) + 1;
+        const isLocked = firstLevelOfWorld > progress.maxLevel;
+        
+        const card = document.createElement('div');
+        card.className = `world-card ${i === navWorld ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
+        card.innerHTML = `
+            ${isLocked ? '<div class="lock-icon">LOCKED</div>' : ''}
+            <div class="text-[10px] opacity-50">WORLD ${i+1}</div>
+            <div class="font-bold text-white">${w.name}</div>
+            <div class="h-1 mt-2 w-full" style="background:${isLocked ? '#333' : w.accent}"></div>
+        `;
+        if (!isLocked) {
+            card.onclick = () => { navWorld = i; navLevel = 1; renderWorldNav(); };
         }
-        function render2048() {
-            grid2048.innerHTML = '';
-            board2048.forEach(row => row.forEach(val => {
-                let div = document.createElement('div');
-                div.className = `tile ${val ? 'tile-'+val : ''}`;
-                div.innerText = val || '';
-                grid2048.appendChild(div);
-            }));
-            document.getElementById('stat1Val').innerText = score;
+        worldList.appendChild(card);
+    });
+
+    renderLevelNav();
+}
+
+function renderLevelNav() {
+    const levelList = document.getElementById('level-list');
+    levelList.innerHTML = '';
+    for (let i = 1; i <= 300; i++) {
+        const globalLvl = (navWorld * LEVELS_PER_WORLD) + i;
+        const isLocked = globalLvl > progress.maxLevel;
+        
+        const btn = document.createElement('div');
+        btn.className = `level-btn ${i === navLevel ? '!bg-cyan-400 !text-black' : ''} ${isLocked ? 'locked' : ''}`;
+        btn.innerText = i;
+        if (!isLocked) {
+            btn.onclick = () => { navLevel = i; renderLevelNav(); };
         }
-        function move2048(dir) {
-            let old = JSON.stringify(board2048);
-            const rotate = () => {
-                let nb = Array(4).fill().map(() => Array(4).fill(0));
-                for(let r=0; r<4; r++) for(let c=0; c<4; c++) nb[c][3-r] = board2048[r][c];
-                board2048 = nb;
-            };
-            const slide = () => {
-                for(let r=0; r<4; r++) {
-                    let row = board2048[r].filter(v => v);
-                    for(let i=0; i<row.length-1; i++) if(row[i] === row[i+1]) { row[i]*=2; score+=row[i]; row.splice(i+1,1); }
-                    while(row.length < 4) row.push(0);
-                    board2048[r] = row;
-                }
-            };
-            if(dir==='right'){ rotate(); rotate(); slide(); rotate(); rotate(); }
-            else if(dir==='left'){ slide(); }
-            else if(dir==='up'){ rotate(); rotate(); rotate(); slide(); rotate(); }
-            else if(dir==='down'){ rotate(); slide(); rotate(); rotate(); rotate(); }
-            if(old !== JSON.stringify(board2048)) { addTile2048(); render2048(); }
+        levelList.appendChild(btn);
+    }
+}
+
+function closeNav() {
+    state = 'MENU';
+    document.getElementById('nav-screen').classList.add('hidden');
+    document.getElementById('menu').classList.remove('hidden');
+}
+
+function announceWorld() {
+    const world = WORLDS[currentWorldIndex];
+    document.body.style.background = world.bg;
+    worldNameEl.innerText = `WORLD ${currentWorldIndex + 1}: ${world.name}`;
+}
+
+function die() {
+    state = 'DEATH';
+    document.getElementById('death-screen').classList.remove('hidden');
+    document.getElementById('final-stats').innerText = `World ${currentWorldIndex + 1} - Level ${currentLevel}`;
+}
+
+function loop() {
+    gameTick++;
+    if (state === 'PLAY') {
+        player.update();
+        camera.x += (player.x - canvas.width / 3 - camera.x) * 0.12;
+        camera.y += (player.y - canvas.height / 2 - camera.y) * 0.12;
+        distEl.innerText = player.distance.toString().padStart(3, '0') + "m";
+        speedEl.innerText = Math.min(100, Math.floor((Math.abs(player.vx) / MAX_RUN) * 100)) + "%";
+    }
+
+    const world = WORLDS[currentWorldIndex] || WORLDS[0];
+    ctx.fillStyle = world.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
+    
+    platforms.forEach(p => {
+        ctx.fillStyle = p.finish ? '#fff' : world.accent; 
+        ctx.shadowBlur = p.finish ? 20 : 10; ctx.shadowColor = ctx.fillStyle;
+        ctx.fillRect(p.x, p.y, p.w, 10);
+        ctx.shadowBlur = 0; ctx.fillStyle = '#111'; ctx.fillRect(p.x, p.y + 10, p.w, p.h - 10);
+        if(p.finish) {
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 20px Orbitron";
+            ctx.fillText("FINISH LINE", p.x + 150, p.y - 20);
         }
+    });
 
-        function endGame(msg = "TERMINATED") {
-            gameActive = false;
-            deathMenu.classList.remove('hidden');
-            document.getElementById('deathTitle').innerText = msg;
-            document.getElementById('finalScore').innerText = score;
+    obstacles.forEach(o => {
+        ctx.shadowBlur = 15; ctx.shadowColor = world.hazard; ctx.fillStyle = world.hazard;
+        if (o.type === 'spike') {
+            ctx.beginPath(); ctx.moveTo(o.x, o.y + o.h); ctx.lineTo(o.x + o.w/2, o.y); ctx.lineTo(o.x + o.w, o.y + o.h); ctx.fill();
         }
+    });
 
-        function gameLoop() {
-            if(!gameActive) return;
-            ctx.fillStyle = '#080808'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    if (state === 'PLAY' || state === 'DEATH' || state === 'WIN') player.draw();
+    ctx.restore();
+    requestAnimationFrame(loop);
+}
 
-            if(currentGame === 'breaker') {
-                if((keys['ArrowLeft'] || keys['KeyA']) && player.x > 0) player.x -= 10;
-                if((keys['ArrowRight'] || keys['KeyD']) && player.x < canvas.width - player.w) player.x += 10;
-                let ball = entities[0];
-                ball.x += ball.dx; ball.y += ball.dy;
-                if(ball.x < ball.r || ball.x > canvas.width - ball.r) ball.dx *= -1;
-                if(ball.y < ball.r) ball.dy *= -1;
-                if(ball.y > canvas.height) {
-                    lives--;
-                    if(lives <= 0) endGame("OUT OF LIVES");
-                    else { ball.x = canvas.width/2; ball.y = canvas.height - 100; ball.dy = -Math.abs(ball.dy); }
-                }
-                if(ball.y > canvas.height - 40 && ball.x > player.x && ball.x < player.x + player.w) {
-                    ball.dy = -Math.abs(ball.dy);
-                    ball.dx = ((ball.x - (player.x + player.w/2)) / (player.w/2)) * 8;
-                }
-                let rem = 0;
-                bricks.forEach(b => {
-                    if(!b.active) return; rem++;
-                    if(ball.x > b.x && ball.x < b.x+b.w && ball.y > b.y && ball.y < b.y+b.h) { b.active=false; ball.dy*=-1; score+=20; }
-                });
-                if(rem === 0) { level++; createBricks(); }
-                ctx.fillStyle = '#3b82f6'; ctx.fillRect(player.x, canvas.height-25, player.w, player.h);
-                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
-                bricks.forEach(b => { if(b.active) { ctx.fillStyle = b.color; ctx.fillRect(b.x, b.y, b.w, b.h); }});
-                document.getElementById('stat2Label').innerText = "LIVES";
-                document.getElementById('levelVal').innerText = lives;
-            } 
-            else if(currentGame === 'rocket') {
-                const ball = entities[0]; const ai = entities[1];
-                if(keys['ArrowUp'] || keys['KeyW']) player.vy -= 0.6; if(keys['ArrowDown'] || keys['KeyS']) player.vy += 0.6;
-                if(keys['ArrowLeft'] || keys['KeyA']) player.vx -= 0.6; if(keys['ArrowRight'] || keys['KeyD']) player.vx += 0.6;
-                
-                let targetX = ball.x + (ball.vx * 10);
-                let targetY = ball.y + (ball.vy * 10);
-                targetX = Math.max(canvas.width/2, Math.min(canvas.width-50, targetX));
-                
-                if(ai.x < targetX) ai.vx += 0.45; else ai.vx -= 0.45;
-                if(ai.y < targetY) ai.vy += 0.45; else ai.vy -= 0.45;
-
-                [player, ai].forEach(o => { o.vx *= 0.94; o.vy *= 0.94; o.x += o.vx; o.y += o.vy; });
-                ball.x += ball.vx; ball.y += ball.vy; ball.vx *= 0.98; ball.vy *= 0.98;
-
-                [player, ai, ball].forEach(o => {
-                    if(o.x < o.r) { o.x = o.r; o.vx *= -0.6; } if(o.x > canvas.width - o.r) { o.x = canvas.width - o.r; o.vx *= -0.6; }
-                    if(o.y < o.r) { o.y = o.r; o.vy *= -0.6; } if(o.y > canvas.height - o.r) { o.y = canvas.height - o.r; o.vy *= -0.6; }
-                });
-                [player, ai].forEach(o => {
-                    let dx = ball.x - o.x; let dy = ball.y - o.y; let d = Math.hypot(dx, dy);
-                    if(d < o.r + ball.r) { 
-                        let a = Math.atan2(dy, dx); 
-                        ball.vx += Math.cos(a)*7.5; 
-                        ball.vy += Math.sin(a)*7.5; 
-                        o.vx -= Math.cos(a)*2; o.vy -= Math.sin(a)*2;
-                    }
-                });
-                if(Math.abs(ball.y - canvas.height/2) < 70) {
-                    if(ball.x < 35) { ai.score++; ball.x = canvas.width/2; ball.vx = 6; }
-                    if(ball.x > canvas.width-35) { player.score++; ball.x = canvas.width/2; ball.vx = -6; }
-                }
-                ctx.strokeStyle = '#333'; ctx.lineWidth = 4;
-                ctx.strokeRect(0, canvas.height/2-70, 40, 140); ctx.strokeRect(canvas.width-40, canvas.height/2-70, 40, 140);
-                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, player.r, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(ai.x, ai.y, ai.r, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
-                score = player.score; level = ai.score;
-                document.getElementById('stat2Label').innerText = "ENEMY"; document.getElementById('levelVal').innerText = level;
-                if(score >= 5) endGame("VICTORY"); if(level >= 5) endGame("DEFEAT");
-            }
-            else if(currentGame === 'dropper') {
-                player.speed += 0.002; player.x += player.dir * 7; player.y += player.speed;
-                if(player.x < 15 || player.x > canvas.width-15) endGame();
-                if(bricks.length < 5) bricks.push({y: bricks.length ? bricks[bricks.length-1].y+250 : 600, cx: 100+Math.random()*(canvas.width-200), gap: 140});
-                bricks.forEach((o,i) => {
-                    if(Math.abs(player.y-o.y) < 15 && (player.x < o.cx-70 || player.x > o.cx+70)) endGame();
-                    if(o.y < player.y-200) bricks.splice(i,1);
-                });
-                score = Math.floor(player.y/10);
-                ctx.save(); ctx.translate(0, -(player.y - 150));
-                ctx.fillStyle = '#ef4444'; bricks.forEach(o => { ctx.fillRect(0, o.y-10, o.cx-70, 20); ctx.fillRect(o.cx+70, o.y-10, canvas.width, 20); });
-                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 10, 0, Math.PI*2); ctx.fill(); ctx.restore();
-            }
-            else if(currentGame === 'neon') {
-                if(keys['ArrowUp'] || keys['KeyW']) player.y -= player.speed;
-                if(keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
-                if(keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
-                if(keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
-
-                // Fire Auto
-                if(frameCount - player.lastShot > player.fireRate) {
-                    let nearest = null; let minD = 1000;
-                    entities.forEach(e => {
-                        let d = Math.hypot(e.x-player.x, e.y-player.y);
-                        if(d < minD) { minD = d; nearest = e; }
-                    });
-                    if(nearest) {
-                        let angle = Math.atan2(nearest.y-player.y, nearest.x-player.x);
-                        projectiles.push({x: player.x, y: player.y, vx: Math.cos(angle)*10, vy: Math.sin(angle)*10});
-                        player.lastShot = frameCount;
-                    }
-                }
-
-                // Spawning logic
-                let spawnRate = Math.max(10, 60 - level);
-                if(frameCount % spawnRate === 0) spawnEnemy();
-
-                // Player boundary
-                player.x = Math.max(15, Math.min(canvas.width-15, player.x));
-                player.y = Math.max(15, Math.min(canvas.height-15, player.y));
-
-                // Entities loop
-                entities.forEach((e, i) => {
-                    let dx = player.x - e.x; let dy = player.y - e.y;
-                    let angle = Math.atan2(dy, dx);
-                    e.x += Math.cos(angle) * e.speed;
-                    e.y += Math.sin(angle) * e.speed;
-
-                    if(Math.hypot(e.x-player.x, e.y-player.y) < e.r + 12) {
-                        player.hp -= (e.type === 'mega' ? 1 : 0.5);
-                        if(player.hp <= 0) endGame("SURVIVOR DOWN");
-                    }
-
-                    ctx.fillStyle = e.color; 
-                    ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.fill();
-                    if(e.type !== 'grunt') {
-                        ctx.fillStyle = 'white'; ctx.fillRect(e.x-15, e.y-e.r-10, 30 * (e.hp/e.maxHp), 4);
-                    }
-                });
-
-                // Projectiles
-                projectiles.forEach((p, pi) => {
-                    p.x += p.vx; p.y += p.vy;
-                    entities.forEach((e, ei) => {
-                        if(Math.hypot(p.x-e.x, p.y-e.y) < e.r + 5) {
-                            e.hp--; p.dead = true;
-                            if(e.hp <= 0) {
-                                score += (e.type === 'mega' ? 10000 : (e.type === 'mini' ? 500 : 10));
-                                player.xp += (e.type === 'mega' ? 5000 : (e.type === 'mini' ? 200 : 20));
-                                
-                                // Powerup Drop Chance
-                                if(Math.random() < (e.type === 'grunt' ? 0.05 : 1.0)) {
-                                    let types = ['health', 'speed', 'fire'];
-                                    powerups.push({x: e.x, y: e.y, type: types[Math.floor(Math.random()*types.length)]});
-                                }
-                                
-                                entities.splice(ei, 1);
-                                if(player.xp >= player.xpToNext && level < 150) {
-                                    level++; player.xp = 0; player.xpToNext *= 1.1;
-                                }
-                            }
-                        }
-                    });
-                    if(p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) p.dead = true;
-                    ctx.fillStyle = '#60a5fa'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
-                });
-                projectiles = projectiles.filter(p => !p.dead);
-
-                // Powerups
-                powerups.forEach((pu, pui) => {
-                    if(Math.hypot(pu.x-player.x, pu.y-player.y) < 25) {
-                        if(pu.type === 'health') player.hp = Math.min(player.maxHp, player.hp + 20);
-                        if(pu.type === 'speed') player.speed += 0.2;
-                        if(pu.type === 'fire') player.fireRate = Math.max(5, player.fireRate - 2);
-                        powerups.splice(pui, 1);
-                    }
-                    let colors = {health: '#22c55e', speed: '#eab308', fire: '#f97316'};
-                    ctx.fillStyle = colors[pu.type];
-                    ctx.beginPath(); ctx.arc(pu.x, pu.y, 8, 0, Math.PI*2); ctx.fill();
-                    ctx.strokeStyle = 'white'; ctx.stroke();
-                });
-
-                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 12, 0, Math.PI*2); ctx.fill();
-                healthBarFill.style.width = (player.hp / player.maxHp * 100) + "%";
-                document.getElementById('stat2Label').innerText = "LEVEL";
-                document.getElementById('levelVal').innerText = level;
-            }
-            else if(currentGame === 'rivals') {
-                if(keys['ArrowUp'] || keys['KeyW']) player.y -= 7; if(keys['ArrowDown'] || keys['KeyS']) player.y += 7;
-                let ai = entities[0]; ai.y += (player.y - ai.y) * 0.08;
-                if((keys['Space'] || keys['KeyK']) && frameCount % 12 === 0) projectiles.push({x: player.x, y: player.y, vx: 12, owner: 'p'});
-                if(frameCount % (Math.max(20, 45 - Math.floor(score/10))) === 0) projectiles.push({x: ai.x, y: ai.y, vx: -11, owner: 'e'});
-                projectiles.forEach(p => {
-                    p.x += p.vx;
-                    if(p.owner==='p' && Math.hypot(p.x-ai.x, p.y-ai.y) < 25) { score++; p.dead=true; }
-                    if(p.owner==='e' && Math.hypot(p.x-player.x, p.y-player.y) < 20) { player.enemyScore++; p.dead=true; }
-                });
-                projectiles = projectiles.filter(p => !p.dead && p.x > 0 && p.x < canvas.width);
-                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(player.x, player.y, 15, 0, Math.PI*2); ctx.fill();
-                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(ai.x, ai.y, 20, 0, Math.PI*2); ctx.fill();
-                projectiles.forEach(p => { ctx.fillStyle = p.owner==='p'?'#3b82f6':'#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
-                level = player.enemyScore; document.getElementById('stat2Label').innerText = "ENEMY"; document.getElementById('levelVal').innerText = level;
-                if(score >= 100) endGame("VICTORY"); if(level >= 50) endGame("DEFEATED");
-            }
-
-            document.getElementById('stat1Val').innerText = score;
-            frameCount++; requestAnimationFrame(gameLoop);
-        }
-
-        switchGame('breaker');
-    </script>
+window.addEventListener('keydown', e => keys[e.code] = true);
+window.addEventListener('keyup', e => keys[e.code] = false);
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+loop();
+</script>
 </body>
 </html>
+  
+
+
+      
