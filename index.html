@@ -115,6 +115,23 @@
         .tile-2048 { background: #3b82f6; color: #fff; box-shadow: 0 0 15px #3b82f6; }
 
         .navbar { background: rgba(0,0,0,0.8); height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; border-bottom: 1px solid #222; }
+        
+        /* Health Bar Container */
+        #health-bar-container {
+            width: 200px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #health-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f87171);
+            width: 100%;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body class="hero-gradient">
@@ -133,7 +150,6 @@
 
     <section class="pt-32 pb-20 px-6">
         <div class="max-w-6xl mx-auto">
-            <!-- Game Tabs for 6 games -->
             <div class="flex flex-wrap items-center justify-center gap-2 mb-8 bg-white/5 p-2 rounded-2xl border border-white/5 w-fit mx-auto">
                 <button onclick="switchGame('breaker')" id="btnBreaker" class="tab-btn active px-4 py-2 rounded-xl text-xs sm:text-sm">Brick Breaker</button>
                 <button onclick="switchGame('rocket')" id="btnRocket" class="tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm">Rocket League</button>
@@ -156,8 +172,11 @@
                                     <div id="stat1Val" class="text-xl font-black font-mono">0</div>
                                 </div>
                                 <div id="levelBox" class="bg-black/80 px-4 py-2 rounded-lg border border-white/10 backdrop-blur-md">
-                                    <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Lives</div>
-                                    <div id="levelVal" class="text-xl font-black font-mono">3</div>
+                                    <div id="stat2Label" class="text-[10px] text-purple-400 font-bold uppercase">Level</div>
+                                    <div id="levelVal" class="text-xl font-black font-mono">1</div>
+                                    <div id="health-bar-container" class="hidden">
+                                        <div id="health-bar-fill"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -199,12 +218,14 @@
         const deathMenu = document.getElementById('death-menu');
         const hud = document.getElementById('hud');
         const grid2048 = document.getElementById('grid2048');
+        const healthBarContainer = document.getElementById('health-bar-container');
+        const healthBarFill = document.getElementById('health-bar-fill');
         
         let currentGame = 'breaker';
         let gameActive = false;
         let keys = {};
         let score = 0, level = 1, lives = 3, frameCount = 0;
-        let player, entities = [], projectiles = [], bricks = [];
+        let player, entities = [], projectiles = [], bricks = [], powerups = [];
         let board2048 = [];
 
         function resize() {
@@ -246,6 +267,7 @@
             
             document.getElementById('game2048').style.display = (type === '2048') ? 'flex' : 'none';
             canvas.style.display = (type === '2048') ? 'none' : 'block';
+            healthBarContainer.classList.add('hidden');
 
             const titles = { breaker: "Brick Breaker", rocket: "2D Rocket League", dropper: "Neon Dropper", neon: "Survivor", rivals: "Rivals 1v1", "2048": "2048 Puzzle" };
             document.getElementById('menuTitle').innerText = titles[type];
@@ -259,7 +281,7 @@
             hud.classList.remove('hidden');
             gameActive = true;
             score = 0; level = 1; lives = 3; frameCount = 0;
-            entities = []; bricks = []; projectiles = [];
+            entities = []; bricks = []; projectiles = []; powerups = [];
 
             if (currentGame === 'breaker') {
                 player = { x: canvas.width/2 - 50, w: 100, h: 12 };
@@ -267,11 +289,19 @@
                 createBricks();
             } else if (currentGame === 'rocket') {
                 player = { x: 100, y: canvas.height/2, vx: 0, vy: 0, r: 18, score: 0 };
-                entities = [{ x: canvas.width/2, y: canvas.height/2, vx: 0, vy: 0, r: 28, type: 'ball' }, { x: canvas.width-100, y: canvas.height/2, vx: 0, vy: 0, r: 18, type: 'ai', score: 0 }];
+                entities = [
+                    { x: canvas.width/2, y: canvas.height/2, vx: 0, vy: 0, r: 28, type: 'ball' }, 
+                    { x: canvas.width-100, y: canvas.height/2, vx: 0, vy: 0, r: 18, type: 'ai', score: 0 }
+                ];
             } else if (currentGame === 'dropper') {
                 player = { x: canvas.width/2, y: 150, dir: 1, speed: 4 };
             } else if (currentGame === 'neon') {
-                player = { x: canvas.width/2, y: canvas.height/2, speed: 4 };
+                player = { 
+                    x: canvas.width/2, y: canvas.height/2, speed: 4, 
+                    hp: 100, maxHp: 100, 
+                    fireRate: 30, lastShot: 0, xp: 0, xpToNext: 100 
+                };
+                healthBarContainer.classList.remove('hidden');
             } else if (currentGame === 'rivals') {
                 player = { x: 80, y: canvas.height/2, enemyScore: 0 };
                 entities = [{ x: canvas.width - 80, y: canvas.height/2 }];
@@ -282,7 +312,29 @@
             if (currentGame !== '2048') requestAnimationFrame(gameLoop);
         }
 
-        // --- Logic Blocks ---
+        function spawnEnemy() {
+            let side = Math.floor(Math.random()*4);
+            let ex, ey;
+            if(side === 0) { ex = Math.random()*canvas.width; ey = -40; }
+            else if(side === 1) { ex = Math.random()*canvas.width; ey = canvas.height+40; }
+            else if(side === 2) { ex = -40; ey = Math.random()*canvas.height; }
+            else { ex = canvas.width+40; ey = Math.random()*canvas.height; }
+
+            let isMiniBoss = (level % 10 === 0);
+            let isMegaBoss = (level === 149);
+            
+            let enemy = {
+                x: ex, y: ey, 
+                speed: 1.5 + (level * 0.02), 
+                hp: isMegaBoss ? 5000 : (isMiniBoss ? 200 : 1), 
+                maxHp: isMegaBoss ? 5000 : (isMiniBoss ? 200 : 1),
+                r: isMegaBoss ? 60 : (isMiniBoss ? 25 : 10),
+                type: isMegaBoss ? 'mega' : (isMiniBoss ? 'mini' : 'grunt'),
+                color: isMegaBoss ? '#facc15' : (isMiniBoss ? '#a855f7' : '#ef4444')
+            };
+            entities.push(enemy);
+        }
+
         function createBricks() {
             const cols = 8; const rows = Math.min(3 + level, 8);
             const padding = 10;
@@ -379,16 +431,29 @@
                 const ball = entities[0]; const ai = entities[1];
                 if(keys['ArrowUp'] || keys['KeyW']) player.vy -= 0.6; if(keys['ArrowDown'] || keys['KeyS']) player.vy += 0.6;
                 if(keys['ArrowLeft'] || keys['KeyA']) player.vx -= 0.6; if(keys['ArrowRight'] || keys['KeyD']) player.vx += 0.6;
+                
+                let targetX = ball.x + (ball.vx * 10);
+                let targetY = ball.y + (ball.vy * 10);
+                targetX = Math.max(canvas.width/2, Math.min(canvas.width-50, targetX));
+                
+                if(ai.x < targetX) ai.vx += 0.45; else ai.vx -= 0.45;
+                if(ai.y < targetY) ai.vy += 0.45; else ai.vy -= 0.45;
+
                 [player, ai].forEach(o => { o.vx *= 0.94; o.vy *= 0.94; o.x += o.vx; o.y += o.vy; });
-                ai.vx += (ball.x > ai.x ? 0.35 : -0.45); ai.vy += (ball.y > ai.y ? 0.35 : -0.35);
                 ball.x += ball.vx; ball.y += ball.vy; ball.vx *= 0.98; ball.vy *= 0.98;
+
                 [player, ai, ball].forEach(o => {
                     if(o.x < o.r) { o.x = o.r; o.vx *= -0.6; } if(o.x > canvas.width - o.r) { o.x = canvas.width - o.r; o.vx *= -0.6; }
                     if(o.y < o.r) { o.y = o.r; o.vy *= -0.6; } if(o.y > canvas.height - o.r) { o.y = canvas.height - o.r; o.vy *= -0.6; }
                 });
                 [player, ai].forEach(o => {
                     let dx = ball.x - o.x; let dy = ball.y - o.y; let d = Math.hypot(dx, dy);
-                    if(d < o.r + ball.r) { let a = Math.atan2(dy, dx); ball.vx += Math.cos(a)*6; ball.vy += Math.sin(a)*6; }
+                    if(d < o.r + ball.r) { 
+                        let a = Math.atan2(dy, dx); 
+                        ball.vx += Math.cos(a)*7.5; 
+                        ball.vy += Math.sin(a)*7.5; 
+                        o.vx -= Math.cos(a)*2; o.vy -= Math.sin(a)*2;
+                    }
                 });
                 if(Math.abs(ball.y - canvas.height/2) < 70) {
                     if(ball.x < 35) { ai.score++; ball.x = canvas.width/2; ball.vx = 6; }
@@ -421,20 +486,100 @@
                 if(keys['ArrowDown'] || keys['KeyS']) player.y += player.speed;
                 if(keys['ArrowLeft'] || keys['KeyA']) player.x -= player.speed;
                 if(keys['ArrowRight'] || keys['KeyD']) player.x += player.speed;
-                if(frameCount % 60 === 0) entities.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height});
-                entities.forEach(e => {
-                    if(Math.hypot(e.x-player.x, e.y-player.y) < 20) endGame();
-                    e.x += (player.x-e.x)*0.01; e.y += (player.y-e.y)*0.01;
-                    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(e.x, e.y, 8, 0, Math.PI*2); ctx.fill();
+
+                // Fire Auto
+                if(frameCount - player.lastShot > player.fireRate) {
+                    let nearest = null; let minD = 1000;
+                    entities.forEach(e => {
+                        let d = Math.hypot(e.x-player.x, e.y-player.y);
+                        if(d < minD) { minD = d; nearest = e; }
+                    });
+                    if(nearest) {
+                        let angle = Math.atan2(nearest.y-player.y, nearest.x-player.x);
+                        projectiles.push({x: player.x, y: player.y, vx: Math.cos(angle)*10, vy: Math.sin(angle)*10});
+                        player.lastShot = frameCount;
+                    }
+                }
+
+                // Spawning logic
+                let spawnRate = Math.max(10, 60 - level);
+                if(frameCount % spawnRate === 0) spawnEnemy();
+
+                // Player boundary
+                player.x = Math.max(15, Math.min(canvas.width-15, player.x));
+                player.y = Math.max(15, Math.min(canvas.height-15, player.y));
+
+                // Entities loop
+                entities.forEach((e, i) => {
+                    let dx = player.x - e.x; let dy = player.y - e.y;
+                    let angle = Math.atan2(dy, dx);
+                    e.x += Math.cos(angle) * e.speed;
+                    e.y += Math.sin(angle) * e.speed;
+
+                    if(Math.hypot(e.x-player.x, e.y-player.y) < e.r + 12) {
+                        player.hp -= (e.type === 'mega' ? 1 : 0.5);
+                        if(player.hp <= 0) endGame("SURVIVOR DOWN");
+                    }
+
+                    ctx.fillStyle = e.color; 
+                    ctx.beginPath(); ctx.arc(e.x, e.y, e.r, 0, Math.PI*2); ctx.fill();
+                    if(e.type !== 'grunt') {
+                        ctx.fillStyle = 'white'; ctx.fillRect(e.x-15, e.y-e.r-10, 30 * (e.hp/e.maxHp), 4);
+                    }
                 });
-                score = Math.floor(frameCount/10);
+
+                // Projectiles
+                projectiles.forEach((p, pi) => {
+                    p.x += p.vx; p.y += p.vy;
+                    entities.forEach((e, ei) => {
+                        if(Math.hypot(p.x-e.x, p.y-e.y) < e.r + 5) {
+                            e.hp--; p.dead = true;
+                            if(e.hp <= 0) {
+                                score += (e.type === 'mega' ? 10000 : (e.type === 'mini' ? 500 : 10));
+                                player.xp += (e.type === 'mega' ? 5000 : (e.type === 'mini' ? 200 : 20));
+                                
+                                // Powerup Drop Chance
+                                if(Math.random() < (e.type === 'grunt' ? 0.05 : 1.0)) {
+                                    let types = ['health', 'speed', 'fire'];
+                                    powerups.push({x: e.x, y: e.y, type: types[Math.floor(Math.random()*types.length)]});
+                                }
+                                
+                                entities.splice(ei, 1);
+                                if(player.xp >= player.xpToNext && level < 150) {
+                                    level++; player.xp = 0; player.xpToNext *= 1.1;
+                                }
+                            }
+                        }
+                    });
+                    if(p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) p.dead = true;
+                    ctx.fillStyle = '#60a5fa'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+                });
+                projectiles = projectiles.filter(p => !p.dead);
+
+                // Powerups
+                powerups.forEach((pu, pui) => {
+                    if(Math.hypot(pu.x-player.x, pu.y-player.y) < 25) {
+                        if(pu.type === 'health') player.hp = Math.min(player.maxHp, player.hp + 20);
+                        if(pu.type === 'speed') player.speed += 0.2;
+                        if(pu.type === 'fire') player.fireRate = Math.max(5, player.fireRate - 2);
+                        powerups.splice(pui, 1);
+                    }
+                    let colors = {health: '#22c55e', speed: '#eab308', fire: '#f97316'};
+                    ctx.fillStyle = colors[pu.type];
+                    ctx.beginPath(); ctx.arc(pu.x, pu.y, 8, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = 'white'; ctx.stroke();
+                });
+
                 ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(player.x, player.y, 12, 0, Math.PI*2); ctx.fill();
+                healthBarFill.style.width = (player.hp / player.maxHp * 100) + "%";
+                document.getElementById('stat2Label').innerText = "LEVEL";
+                document.getElementById('levelVal').innerText = level;
             }
             else if(currentGame === 'rivals') {
                 if(keys['ArrowUp'] || keys['KeyW']) player.y -= 7; if(keys['ArrowDown'] || keys['KeyS']) player.y += 7;
-                let ai = entities[0]; ai.y += Math.sin(frameCount/15)*8;
+                let ai = entities[0]; ai.y += (player.y - ai.y) * 0.08;
                 if((keys['Space'] || keys['KeyK']) && frameCount % 12 === 0) projectiles.push({x: player.x, y: player.y, vx: 12, owner: 'p'});
-                if(frameCount % 40 === 0) projectiles.push({x: ai.x, y: ai.y, vx: -10, owner: 'e'});
+                if(frameCount % (Math.max(20, 45 - Math.floor(score/10))) === 0) projectiles.push({x: ai.x, y: ai.y, vx: -11, owner: 'e'});
                 projectiles.forEach(p => {
                     p.x += p.vx;
                     if(p.owner==='p' && Math.hypot(p.x-ai.x, p.y-ai.y) < 25) { score++; p.dead=true; }
@@ -445,7 +590,7 @@
                 ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(ai.x, ai.y, 20, 0, Math.PI*2); ctx.fill();
                 projectiles.forEach(p => { ctx.fillStyle = p.owner==='p'?'#3b82f6':'#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill(); });
                 level = player.enemyScore; document.getElementById('stat2Label').innerText = "ENEMY"; document.getElementById('levelVal').innerText = level;
-                if(score >= 50) endGame("VICTORY"); if(level >= 50) endGame("DEFEATED");
+                if(score >= 100) endGame("VICTORY"); if(level >= 50) endGame("DEFEATED");
             }
 
             document.getElementById('stat1Val').innerText = score;
