@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-
-<html lang="en">
+<Doctype html>
+    <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -56,7 +55,6 @@
         .level-btn.locked { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
         .level-btn:hover:not(.locked) { background: #00f2ff; color: #000; }
 
-        /* Toggle Switch for Cloaker */
         .switch {
             position: relative; display: inline-block; width: 50px; height: 24px;
         }
@@ -108,7 +106,6 @@
             <button class="btn" onclick="continueGame()">Continue Journey</button>
             <button class="btn btn-ghost" onclick="openNav()">Select World / Level</button>
             
-            <!-- Cloaker Toggle -->
             <div class="mt-8 flex items-center gap-3 pointer-events-auto bg-white/5 p-3 rounded-lg">
                 <span class="text-[10px] text-white/50 uppercase font-bold">Stealth Mode (Cloak)</span>
                 <label class="switch">
@@ -119,7 +116,7 @@
 
             <div class="controls-hint uppercase">
                 WASD / Arrows to Move • W/Up/Space to Jump<br>
-                S/Down to Slide • <span class="text-cyan-400">Slide to clear low beams!</span>
+                S/Down to Slide • <span class="text-cyan-400">Slide to clear barriers!</span>
             </div>
         </div>
 
@@ -163,7 +160,6 @@ let camera = { x: 0, y: 0 };
 let keys = {};
 let gameTick = 0;
 
-// Persisted progress object
 let progress = { 
     maxLevel: 1, 
     lastWorld: 0, 
@@ -172,7 +168,6 @@ let progress = {
     cloakEnabled: false 
 };
 
-// Load progress from local storage
 const saved = localStorage.getItem('parkourProSave_v2');
 if (saved) {
     progress = JSON.parse(saved);
@@ -215,7 +210,6 @@ const FRICTION = 0.85;
 const MAX_RUN = 9.0;
 const JUMP_FORCE = -14.5;
 
-// Cloaker Logic
 function toggleCloak() {
     progress.cloakEnabled = document.getElementById('cloak-toggle').checked;
     saveProgress();
@@ -224,17 +218,13 @@ function toggleCloak() {
 
 function applyCloak() {
     const title = document.getElementById('page-title');
-    const favicon = document.getElementById('favicon');
     if (progress.cloakEnabled) {
         title.innerText = "Google";
-        favicon.href = "https://www.google.com/favicon.ico";
     } else {
         title.innerText = "Neon Parkour Pro | Slide Edition";
-        favicon.href = "https://www.google.com/favicon.ico"; // Standard game icon would go here
     }
 }
 
-// Initial Cloak Apply
 document.getElementById('cloak-toggle').checked = progress.cloakEnabled;
 applyCloak();
 
@@ -281,9 +271,9 @@ class Player {
         this.vx = Math.max(-limit, Math.min(limit, this.vx));
 
         if ((keys['KeyS'] || keys['ArrowDown']) && this.grounded && Math.abs(this.vx) > 1) {
-            if (!this.sliding) { this.sliding = true; this.h = 24; this.y += 24; }
+            if (!this.sliding) { this.sliding = true; this.h = 18; this.y += 30; }
         } else if (this.sliding) {
-            this.h = 48; this.y -= 24; this.sliding = false;
+            this.h = 48; this.y -= 30; this.sliding = false;
         }
 
         this.vy += GRAVITY;
@@ -297,7 +287,6 @@ class Player {
             if (this.x + this.w > p.x && this.x < p.x + p.w) {
                 if (this.vy > 0 && this.y + this.h > p.y && this.y + this.h < p.y + p.h + this.vy + 2) {
                     this.y = p.y - this.h; this.vy = 0; this.grounded = true;
-                    
                     if (p.finish) { this.finished = true; win(); }
                     if (p.checkpoint && !p.activated) {
                         p.activated = true;
@@ -335,9 +324,7 @@ class Player {
         });
 
         if ((keys['KeyW'] || keys['ArrowUp'] || keys['Space']) && this.coyoteTime > 0) {
-            this.vy = JUMP_FORCE; 
-            this.grounded = false; 
-            this.coyoteTime = 0;
+            this.vy = JUMP_FORCE; this.grounded = false; this.coyoteTime = 0;
             keys['Space'] = false; keys['KeyW'] = false; keys['ArrowUp'] = false;
         }
 
@@ -380,8 +367,6 @@ function saveProgress() {
 function startGameFromParams(wIdx, lNum, isRespawn = false) {
     currentWorldIndex = wIdx;
     currentLevel = lNum;
-    
-    // If not a respawn, we reset to level start OR last checkpoint if it's the current level
     if (!isRespawn) {
         if (progress.lastLevel === currentLevel && progress.lastWorld === currentWorldIndex) {
             lastCheckpoint = progress.lastCheckpoint;
@@ -392,7 +377,6 @@ function startGameFromParams(wIdx, lNum, isRespawn = false) {
         obstacles = [];
         generateLevel();
     }
-    
     player = new Player();
     state = 'PLAY';
     document.querySelectorAll('.menu-overlay').forEach(m => m.classList.add('hidden'));
@@ -416,7 +400,10 @@ function generateLevel() {
             const roll = Math.random();
             if (roll < 0.2) obstacles.push({ type: 'spike', x: lastX + gap + (platformW/2) - 15, y: newY - 20, w: 30, h: 20 });
             else if (roll < 0.4 && platformW > 250) obstacles.push({ type: 'moveSpike', x: lastX + gap + 20, y: newY - 20, w: 30, h: 20, range: platformW - 70, off: 0, dir: 1 });
-            else if (roll < 0.6 && platformW > 200) obstacles.push({ type: 'lowBeam', x: lastX + gap + (platformW/2) - 40, y: newY - 65, w: 80, h: 35 });
+            else if (roll < 0.6 && platformW > 200) {
+                // Taller barriers that are higher up
+                obstacles.push({ type: 'lowBeam', x: lastX + gap + (platformW/2) - 40, y: newY - 90, w: 80, h: 65 });
+            }
             else if (roll < 0.75) obstacles.push({ type: 'laser', x: lastX + gap + (platformW/2) - 10, y: newY - 150, w: 20, h: 150, timer: Math.random() * 100, active: false });
         }
         lastX += gap + platformW;
@@ -427,11 +414,10 @@ function generateLevel() {
 
 function win() {
     state = 'WIN';
-    const currentGlobal = (currentWorldIndex * LEVELS_PER_WORLD) + currentLevel;
-    if (currentGlobal === progress.maxLevel) { progress.maxLevel++; }
+    if ((currentWorldIndex * LEVELS_PER_WORLD) + currentLevel === progress.maxLevel) { progress.maxLevel++; }
     progress.lastWorld = currentWorldIndex;
-    progress.lastLevel = currentLevel + 1; // Mark next level as start
-    progress.lastCheckpoint = { x: 200, y: 500 }; // Reset checkpoint for new level
+    progress.lastLevel = currentLevel + 1; 
+    progress.lastCheckpoint = { x: 200, y: 500 }; 
     saveProgress();
     document.getElementById('win-screen').classList.remove('hidden');
 }
@@ -443,11 +429,7 @@ function nextLevel() {
 }
 
 function retryLevel() { startGameFromParams(currentWorldIndex, currentLevel, true); }
-
-function continueGame() {
-    startGameFromParams(progress.lastWorld % WORLDS.length, progress.lastLevel, false);
-}
-
+function continueGame() { startGameFromParams(progress.lastWorld % WORLDS.length, progress.lastLevel, false); }
 function startGameFromNav() { 
     progress.lastWorld = navWorld;
     progress.lastLevel = navLevel;
@@ -535,7 +517,7 @@ function loop() {
         } else if (o.type === 'lowBeam') {
             ctx.shadowColor = "#ffffff"; ctx.fillStyle = "#ffffff"; ctx.fillRect(o.x, o.y, o.w, o.h);
             ctx.fillStyle = world.hazard; ctx.fillRect(o.x, o.y + 5, o.w, o.h - 10);
-            ctx.fillStyle = "#ffffff"; ctx.font = "8px JetBrains Mono"; ctx.textAlign = "center"; ctx.fillText("LOW CLEARANCE", o.x + o.w/2, o.y + o.h/2 + 3);
+            ctx.fillStyle = "#ffffff"; ctx.font = "bold 10px JetBrains Mono"; ctx.textAlign = "center"; ctx.fillText("DANGER", o.x + o.w/2, o.y + o.h/2 + 4);
         }
     });
     if (state !== 'NAV' && state !== 'MENU') player.draw();
