@@ -122,7 +122,7 @@ let progress = {
     maxLevel: 1, 
     lastWorld: 0, 
     lastLevel: 1, 
-    lastCheckpoint: { x: 200, y: 300 },
+    lastCheckpoint: { x: 100, y: 400 }, // Standard starting spawn
     cloakEnabled: false 
 };
 
@@ -157,7 +157,7 @@ class Player {
     constructor() { this.reset(); }
     reset() {
         this.x = lastCheckpoint.x; 
-        this.y = lastCheckpoint.y - 100;
+        this.y = lastCheckpoint.y - 60; // Spawn slightly above platform
         this.vx = 0; this.vy = 0;
         this.w = 24; this.h = 48;
         this.grounded = false;
@@ -180,7 +180,6 @@ class Player {
         const limit = this.sliding ? 13 : MAX_RUN;
         this.vx = Math.max(-limit, Math.min(limit, this.vx));
 
-        // Sliding logic
         if ((keys['KeyS'] || keys['ArrowDown']) && this.grounded) {
             if (!this.sliding) { this.sliding = true; this.h = 16; this.y += 32; }
         } else if (this.sliding) {
@@ -208,7 +207,6 @@ class Player {
             }
         });
 
-        // Collision logic for obstacles
         obstacles.forEach(o => {
             if (this.x + this.w - 4 > o.x && this.x + 4 < o.x + o.w && this.y + this.h > o.y && this.y < o.y + o.h) die();
         });
@@ -218,7 +216,7 @@ class Player {
         }
 
         this.distance = Math.max(this.distance, Math.floor(this.x / 10));
-        if (this.y > 1500) die();
+        if (this.y > 2000) die();
     }
 
     draw() {
@@ -250,12 +248,18 @@ function saveProgress() { localStorage.setItem('parkourProSave_v3', JSON.stringi
 
 function startGameFromParams(wIdx, lNum, isRespawn = false) {
     currentWorldIndex = wIdx; currentLevel = lNum;
+    
+    // Safety check: ensure we have a valid lastCheckpoint
+    if (!lastCheckpoint || isNaN(lastCheckpoint.x)) {
+        lastCheckpoint = { x: 100, y: 500 };
+    }
+
     if (!isRespawn) {
-        lastCheckpoint = (progress.lastLevel === currentLevel && progress.lastWorld === currentWorldIndex) ? progress.lastCheckpoint : { x: 200, y: 500 };
-        platforms = [{ x: 0, y: 500, w: 800, h: 50 }];
+        platforms = [];
         obstacles = [];
         generateLevel();
     }
+
     player = new Player();
     state = 'PLAY';
     document.querySelectorAll('.menu-overlay').forEach(m => m.classList.add('hidden'));
@@ -266,19 +270,16 @@ function startGameFromParams(wIdx, lNum, isRespawn = false) {
 }
 
 function generateLevel() {
-    let lastX = 800, lastY = 500;
-    
-    platforms.push({ x: 6900, y: 450, w: 400, h: 40, checkpoint: true, activated: false });
+    // ALWAYS start with a guaranteed platform at spawn
+    platforms.push({ x: lastCheckpoint.x - 100, y: lastCheckpoint.y, w: 400, h: 50 });
 
+    let lastX = lastCheckpoint.x + 300, lastY = lastCheckpoint.y;
+    
     for (let i = 0; i < 40; i++) {
         let gap = 180 + Math.random() * 200;
         let pW = 200 + Math.random() * 300;
-        let nY = Math.max(200, Math.min(800, lastY + (Math.random() - 0.5) * 180));
+        let nY = Math.max(250, Math.min(750, lastY + (Math.random() - 0.5) * 200));
         
-        if (Math.abs(lastX + gap - 7000) < 500) {
-            lastX += 800;
-        }
-
         const isCP = i === 20;
         platforms.push({ x: lastX + gap, y: nY, w: pW, h: 40, checkpoint: isCP, activated: false });
         
@@ -287,8 +288,8 @@ function generateLevel() {
             obstacles.push({ 
                 x: lastX + gap + pW/2 - 7, 
                 y: nY - 350, 
-                w: 14, // Thinner width
-                h: 332  // Height stops just above the platform
+                w: 14, 
+                h: 334 
             });
         }
         lastX += gap + pW; lastY = nY;
@@ -303,7 +304,10 @@ function retryLevel() { startGameFromParams(currentWorldIndex, currentLevel, tru
 function continueGame() { startGameFromParams(progress.lastWorld, progress.lastLevel, false); }
 function openNav() { state = 'NAV'; document.getElementById('menu').classList.add('hidden'); document.getElementById('nav-screen').classList.remove('hidden'); renderWorldNav(); }
 function closeNav() { state = 'MENU'; document.getElementById('nav-screen').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
-function startGameFromNav() { startGameFromParams(navWorld, navLevel, false); }
+function startGameFromNav() { 
+    lastCheckpoint = { x: 100, y: 500 }; // Reset checkpoint for new world selection
+    startGameFromParams(navWorld, navLevel, false); 
+}
 
 function renderWorldNav() {
     const list = document.getElementById('world-list'); list.innerHTML = '';
@@ -317,7 +321,7 @@ function renderWorldNav() {
     const lList = document.getElementById('level-list'); lList.innerHTML = '';
     for (let i = 1; i <= 20; i++) {
         const b = document.createElement('div'); b.className = `level-btn ${i === navLevel ? '!bg-cyan-400' : ''}`;
-        b.innerText = i; b.onclick = () => { navLevel = i; renderLevelNav(); };
+        b.innerText = i; b.onclick = () => { navLevel = i; renderWorldNav(); };
         lList.appendChild(b);
     }
 }
@@ -336,30 +340,18 @@ function loop() {
     
     platforms.forEach(p => {
         ctx.fillStyle = p.finish ? "#4ade80" : (p.checkpoint ? (p.activated ? "#fff" : "#fbbf24") : world.accent);
-        if (p.checkpoint) {
-            ctx.shadowBlur = 20; ctx.shadowColor = p.activated ? "#fff" : "#fbbf24";
-        } else {
-            ctx.shadowBlur = 0;
-        }
+        ctx.shadowBlur = p.checkpoint ? 20 : 0;
+        ctx.shadowColor = p.checkpoint ? (p.activated ? "#fff" : "#fbbf24") : "transparent";
         ctx.fillRect(p.x, p.y, p.w, 10);
         ctx.fillStyle = '#111'; ctx.fillRect(p.x, p.y + 10, p.w, p.h - 10);
     });
 
-    // RENDER THIN LASERS
     obstacles.forEach(o => {
-        ctx.shadowBlur = 15; 
-        ctx.shadowColor = world.hazard; 
-        ctx.fillStyle = world.hazard;
+        ctx.shadowBlur = 15; ctx.shadowColor = world.hazard; ctx.fillStyle = world.hazard;
         ctx.fillRect(o.x, o.y, o.w, o.h);
-        
-        // Inner core for laser effect
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "#fff";
+        ctx.shadowBlur = 0; ctx.fillStyle = "#fff";
         ctx.fillRect(o.x + (o.w/2) - 1, o.y, 2, o.h);
-
-        // Top emitter
-        ctx.fillStyle = "#333";
-        ctx.fillRect(o.x - 4, o.y, o.w + 8, 6);
+        ctx.fillStyle = "#333"; ctx.fillRect(o.x - 4, o.y, o.w + 8, 6);
     });
 
     if (state === 'PLAY') player.draw();
