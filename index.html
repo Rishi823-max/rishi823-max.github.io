@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Parkour</title>
+    <title>Neon Parkour: Infinity</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -13,16 +13,16 @@
         .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; }
         .panel {
             position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-            background: rgba(5,5,5,0.95); border: 2px solid #00f2ff; padding: 20px;
-            color: #00f2ff; display: none; pointer-events: auto; width: 380px;
-            border-radius: 10px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.4); z-index: 1000;
+            background: rgba(5,5,5,0.98); border: 2px solid #00f2ff; padding: 20px;
+            color: #00f2ff; display: none; pointer-events: auto; width: 400px;
+            border-radius: 10px; box-shadow: 0 0 50px rgba(0, 242, 255, 0.6); z-index: 1000;
         }
         .close-btn { position: absolute; right: 10px; top: 10px; color: #ff0044; cursor: pointer; border: 1px solid #ff0044; padding: 2px 8px; }
-        .gui-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; width: 100%; padding: 8px; margin-bottom: 5px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .gui-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; width: 100%; padding: 10px; margin-bottom: 5px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .gui-btn:hover { background: #00f2ff; color: #000; }
         #admin-console { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 500px; background: #000; border: 2px solid #00f2ff; padding: 15px; pointer-events: auto; color: #00f2ff; display: none; }
         #admin-input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 18px; }
-        #broadcast-msg { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); color: #00f2ff; font-family: 'Orbitron'; font-size: 1.5rem; opacity: 0; transition: 0.5s; pointer-events: none; }
+        #broadcast-msg { position: absolute; top: 15%; left: 50%; transform: translateX(-50%); color: #00f2ff; font-family: 'Orbitron'; font-size: 1.5rem; opacity: 0; transition: 0.5s; pointer-events: none; text-align: center;}
     </style>
 </head>
 <body>
@@ -36,38 +36,38 @@
                 <div id="world-name" class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">DISTRICT 1</div>
                 <div class="flex items-end gap-8">
                     <div><div class="text-[10px] opacity-60">COINS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
-                    <div><div class="text-[10px] opacity-60">BEST DISTANCE</div><div id="dist-tag" class="text-xl font-black text-white">0m</div></div>
+                    <div><div class="text-[10px] opacity-60">DISTANCE</div><div id="dist-tag" class="text-xl font-black text-white">0m</div></div>
                 </div>
             </div>
             <div class="absolute top-6 right-6 flex flex-col items-end">
-                <button id="admin-toggle-btn" class="hidden bg-cyan-400 p-2 font-bold mb-2 pointer-events-auto text-black rounded" onclick="togglePanel('admin-gui')">ADMIN PANEL</button>
-                <button class="bg-yellow-400 text-black p-2 font-bold pointer-events-auto rounded" onclick="togglePanel('shop-gui')">MARKET</button>
+                <button id="admin-toggle-btn" class="hidden bg-cyan-500 text-black p-3 font-bold mb-2 pointer-events-auto rounded shadow-lg" onclick="togglePanel('admin-gui')">ADMIN TERMINAL</button>
+                <button class="bg-yellow-400 text-black p-3 font-bold pointer-events-auto rounded shadow-lg" onclick="togglePanel('shop-gui')">COSMETIC SHOP</button>
             </div>
         </div>
 
         <div id="shop-gui" class="panel">
             <div class="close-btn" onclick="togglePanel('shop-gui')">X</div>
-            <h3 class="text-center mb-4 font-bold italic">COLLECTION</h3>
-            <button class="gui-btn" onclick="buyItem('ghost', 2000)">Ghost Trail (2k)</button>
-            <button class="gui-btn" onclick="buyItem('electric', 5000)">Electric Trail (5k)</button>
-            <button class="gui-btn" onclick="buyItem('abyss', 15000)">Abyss Trail (15k)</button>
-            <button class="gui-btn" onclick="buyItem('jetpack', 50000)">Jetpack (50k)</button>
-            <button class="gui-btn" onclick="buyItem('life', 1000000)">Extra Life (1M)</button>
+            <h3 class="text-center mb-4 font-bold italic underline">PREMIUM TRAILS</h3>
+            <button class="gui-btn" onclick="buyItem('supernova', 100000)">Supernova (100k)</button>
+            <button class="gui-btn" onclick="buyItem('void', 500000)">Void-Walker (500k)</button>
+            <button class="gui-btn" onclick="buyItem('rainbow', 1000000)">Rainbow Wave (1M)</button>
+            <button class="gui-btn" onclick="buyItem('jetpack', 10000000)">Infinite Fuel (10M)</button>
         </div>
 
         <div id="admin-gui" class="panel">
             <div class="close-btn" onclick="togglePanel('admin-gui')">X</div>
-            <button class="gui-btn" onclick="runCmd('/skip')">Skip Level Segment</button>
-            <button class="gui-btn" onclick="runCmd('/world 2')">Warp to Void</button>
-            <button class="gui-btn" onclick="runCmd('/coins 99999')">Add 100k Coins</button>
-            <button class="gui-btn" onclick="runCmd('/god')">Toggle God Mode</button>
+            <button class="gui-btn" onclick="runCmd('/coins 1t')">Get 1 Trillion Coins</button>
+            <button class="gui-btn" onclick="runCmd('/speed 5')">Hyper Speed (5x)</button>
+            <button class="gui-btn" onclick="runCmd('/flight')">Toggle Flight</button>
+            <button class="gui-btn" onclick="runCmd('/skip')">Skip 1000m</button>
         </div>
 
-        <div id="admin-console"><input type="text" id="admin-input" placeholder="/skip | /world | /coins | /say" autocomplete="off"></div>
+        <div id="admin-console"><input type="text" id="admin-input" placeholder="/coins 1t | /speed [val] | /flight | /skip" autocomplete="off"></div>
 
         <div id="menu" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center pointer-events-auto">
-            <h1 class="text-7xl font-black text-white mb-8 hud-text italic tracking-tighter">NEON PARKOUR</h1>
-            <button class="bg-cyan-500 text-black px-20 py-5 font-black text-2xl rounded-full shadow-[0_0_30px_#00f2ff]" onclick="startGame()">RUN</button>
+            <h1 class="text-8xl font-black text-white mb-2 hud-text italic">NEON</h1>
+            <h1 class="text-4xl font-black text-cyan-400 mb-10 hud-text tracking-widest">PARKOUR INFINITY</h1>
+            <button class="bg-white text-black px-24 py-6 font-black text-3xl hover:bg-cyan-400 transition-all cursor-pointer" onclick="startGame()">RUN</button>
         </div>
     </div>
 
@@ -76,15 +76,15 @@ const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 let state = 'MENU', player, platforms = [], obstacles = [], coins = [], checkpoints = [];
 let camera = { x: 0, y: 0 }, keys = {}, gameTick = 0, lastCheckpoint = { x: 100, y: 400 };
-let currentWorld = 1, maxDist = 0;
+let currentWorld = 1, maxDist = 0, runSpeed = 1.8;
 
 let worldConfig = {
-    1: { gravity: 0.8, color: '#00f2ff', name: "Neon City" },
-    2: { gravity: 0.4, color: '#ff00ff', name: "The Void" },
-    3: { gravity: 1.2, color: '#ff4400', name: "Magma Core" }
+    1: { gravity: 0.8, color: '#00f2ff', name: "District: Prime" },
+    2: { gravity: 0.4, color: '#ff00ff', name: "District: Zero-G" },
+    3: { gravity: 1.2, color: '#ff4400', name: "District: Core" }
 };
 
-let progress = { coins: 0, lives: 0, skin: '#fff', trail: 'none', size: 1, hasJetpack: false, isGod: false };
+let progress = { coins: 0, skin: '#fff', trail: 'none', size: 1, hasJetpack: false, isGod: false, infiniteFuel: false };
 
 class Player {
     constructor() { this.reset(); this.trail = []; }
@@ -95,12 +95,12 @@ class Player {
 
     update() {
         let move = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
-        this.vx += move * 1.8;
+        this.vx += move * runSpeed;
         this.vx *= 0.85;
 
         if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp'])) {
             if (this.grounded && !keys.jumpPressed) { this.vy = -18.5; this.grounded = false; keys.jumpPressed = true; }
-            else if (progress.hasJetpack) { this.vy -= 1.1; }
+            else if (progress.hasJetpack || progress.infiniteFuel) { this.vy -= 1.2; }
         }
         
         this.vy += worldConfig[currentWorld].gravity;
@@ -109,43 +109,40 @@ class Player {
 
         this.grounded = false;
         platforms.forEach(p => {
-            if (this.x + this.w * progress.size > p.x && this.x < p.x + p.w && this.vy >= 0 && this.y + this.h * progress.size >= p.y && this.y + this.h * progress.size <= p.y + 30) {
-                this.y = p.y - this.h * progress.size; this.vy = 0; this.grounded = true;
+            if (this.x + this.w > p.x && this.x < p.x + p.w && this.vy >= 0 && this.y + this.h >= p.y && this.y + this.h <= p.y + 30) {
+                this.y = p.y - this.h; this.vy = 0; this.grounded = true;
             }
         });
 
-        checkpoints.forEach(cp => { if (!cp.active && this.x > cp.x) { cp.active = true; lastCheckpoint = {x: cp.x, y: cp.y-100}; broadcast("DISTRICT SYNCED"); } });
+        checkpoints.forEach(cp => { if (!cp.active && this.x > cp.x) { cp.active = true; lastCheckpoint = {x: cp.x, y: cp.y-100}; broadcast("PROGRESS SAVED"); } });
 
         if (!progress.isGod) {
-            obstacles.forEach(o => { if (this.x < o.x + o.w && this.x + this.w * progress.size > o.x && this.y < o.y + o.h && this.y + this.h * progress.size > o.y) die(); });
+            obstacles.forEach(o => { if (this.x < o.x + o.w && this.x + this.w > o.x && this.y < o.y + o.h && this.y + this.h > o.y) die(); });
             if (this.y > 2500) die();
         }
 
-        coins.forEach(c => { if (!c.collected && this.x < c.x + 30 && this.x + this.w * progress.size > c.x && this.y < c.y + 30 && this.y + this.h * progress.size > c.y) { c.collected = true; progress.coins += 100; } });
+        coins.forEach(c => { if (!c.collected && this.x < c.x + 30 && this.x + this.w > c.x && this.y < c.y + 30 && this.y + this.h > c.y) { c.collected = true; progress.coins += 500; } });
 
-        this.trail.push({x: this.x + (this.w*progress.size)/2, y: this.y + (this.h*progress.size)/2});
-        if (this.trail.length > 20) this.trail.shift();
+        this.trail.push({x: this.x + 10, y: this.y + 25});
+        if (this.trail.length > 25) this.trail.shift();
 
         if (this.x > maxDist) maxDist = Math.floor(this.x);
-        document.getElementById('coin-count').innerText = progress.coins;
+        document.getElementById('coin-count').innerText = progress.coins.toLocaleString();
         document.getElementById('dist-tag').innerText = maxDist + "m";
     }
 
     draw() {
         if (progress.trail !== 'none') {
             this.trail.forEach((t, i) => {
-                ctx.globalAlpha = i / 20;
-                if (progress.trail === 'ghost') ctx.fillStyle = "#fff";
-                else if (progress.trail === 'electric') ctx.fillStyle = "#ffff00";
-                else ctx.fillStyle = "#4b0082";
-                ctx.fillRect(t.x - camera.x - 4, t.y - camera.y - 4, 8, 8);
+                ctx.globalAlpha = i / 25;
+                if (progress.trail === 'supernova') ctx.fillStyle = `rgb(255, ${Math.random()*150}, 0)`;
+                else if (progress.trail === 'void') ctx.fillStyle = "#1a0033";
+                else if (progress.trail === 'rainbow') ctx.fillStyle = `hsl(${gameTick * 5 + i * 10}, 100%, 50%)`;
+                ctx.beginPath(); ctx.arc(t.x - camera.x, t.y - camera.y, 10, 0, Math.PI*2); ctx.fill();
             });
         }
-        ctx.globalAlpha = 1;
-        ctx.save();
-        ctx.translate(this.x + (this.w * progress.size)/2 - camera.x, this.y + (this.h * progress.size)/2 - camera.y);
-        ctx.scale(progress.size, progress.size);
-        ctx.rotate(this.rot);
+        ctx.globalAlpha = 1; ctx.save();
+        ctx.translate(this.x + 10 - camera.x, this.y + 25 - camera.y); ctx.rotate(this.rot);
         ctx.strokeStyle = progress.skin; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(0, -20, 6, 0, Math.PI*2); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(0, 10); ctx.stroke();
@@ -157,7 +154,7 @@ class Player {
     }
 }
 
-function die() { player.reset(lastCheckpoint.x, lastCheckpoint.y); broadcast("RECONSTRUCTING..."); }
+function die() { player.reset(lastCheckpoint.x, lastCheckpoint.y); broadcast("REBOOTING SYSTEM..."); }
 
 function broadcast(msg) {
     const b = document.getElementById('broadcast-msg');
@@ -167,23 +164,19 @@ function broadcast(msg) {
 
 function runCmd(cmd) {
     const p = cmd.split(' ');
-    if (p[0] === '/skip') {
-        const nextCP = checkpoints.find(c => c.x > player.x);
-        if (nextCP) { player.x = nextCP.x; player.y = nextCP.y - 100; broadcast("LEAP FORWARD ACTIVATED"); }
-    }
-    if (p[0] === '/world') { currentWorld = parseInt(p[1]) || 1; document.getElementById('world-name').innerText = worldConfig[currentWorld].name; }
-    if (p[0] === '/coins') progress.coins += parseInt(p[1]) || 0;
-    if (p[0] === '/say') broadcast(cmd.substring(5).toUpperCase());
-    if (p[0] === '/god') { progress.isGod = !progress.isGod; broadcast("GOD MODE: " + (progress.isGod ? "ON" : "OFF")); }
+    if (p[0] === '/coins') { if (p[1] === '1t') progress.coins = 1000000000000; else progress.coins += parseInt(p[1]) || 0; }
+    if (p[0] === '/skip') { player.x += 1000; broadcast("SKIP SUCCESSFUL"); }
+    if (p[0] === '/speed') runSpeed = parseFloat(p[1]) || 1.8;
+    if (p[0] === '/flight') { progress.infiniteFuel = !progress.infiniteFuel; broadcast("FLIGHT: " + progress.infiniteFuel); }
+    if (p[0] === '/god') { progress.isGod = !progress.isGod; broadcast("GOD MODE: " + progress.isGod); }
 }
 
 function buyItem(type, price) {
     if (progress.coins >= price) {
         progress.coins -= price;
-        if (type === 'life') progress.lives++;
-        else if (type === 'jetpack') progress.hasJetpack = true;
+        if (type === 'jetpack') progress.infiniteFuel = true;
         else progress.trail = type;
-        broadcast("GEAR EQUIPPED");
+        broadcast("ELITE GEAR EQUIPPED");
     }
 }
 
@@ -196,13 +189,13 @@ function startGame() {
     platforms = [{ x: 0, y: 500, w: 2000, h: 60 }];
     obstacles = []; coins = []; checkpoints = []; gameTick = 0;
     let lx = 2000;
-    for (let i = 0; i < 400; i++) {
-        let gap = 150 + Math.random() * 200;
+    for (let i = 0; i < 600; i++) {
+        let gap = 140 + Math.random() * 180;
         let pw = 300 + Math.random() * 500;
         let ny = 250 + Math.random() * 450;
         platforms.push({ x: lx + gap, y: ny, w: pw, h: 50 });
-        if (i % 6 === 0) checkpoints.push({ x: lx + gap, y: ny, active: false });
-        if (i % 8 === 0) obstacles.push({ x: lx + gap + 150, y: ny - 10, w: 75, h: 75 });
+        if (i % 2 === 0) checkpoints.push({ x: lx + gap, y: ny, active: false }); // High density checkpoints
+        if (i % 7 === 0) obstacles.push({ x: lx + gap + 150, y: ny - 10, w: 80, h: 80 });
         coins.push({ x: lx + gap + 40, y: ny - 60, collected: false });
         lx += gap + pw;
     }
@@ -212,18 +205,18 @@ function startGame() {
 }
 
 function loop() {
-    ctx.fillStyle = "#020202"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#010101"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state === 'PLAY') {
         gameTick++; player.update();
         camera.x += (player.x - canvas.width/3 - camera.x) * 0.1;
         camera.y += (player.y - canvas.height/2 - camera.y) * 0.1;
-        platforms.forEach(p => { ctx.fillStyle = worldConfig[currentWorld].color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 4); });
-        checkpoints.forEach(cp => { ctx.fillStyle = cp.active ? "#00ff88" : "#222"; ctx.fillRect(cp.x - camera.x, cp.y - 120 - camera.y, 8, 120); });
+        platforms.forEach(p => { ctx.fillStyle = worldConfig[currentWorld].color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 5); });
+        checkpoints.forEach(cp => { ctx.fillStyle = cp.active ? "#00ff88" : "#111"; ctx.fillRect(cp.x - camera.x, cp.y - 120 - camera.y, 10, 120); });
         obstacles.forEach(o => {
-            ctx.fillStyle = "#ff0044"; ctx.save(); ctx.translate(o.x + 37 - camera.x, o.y + 37 - camera.y);
-            ctx.rotate(gameTick * 0.1); ctx.fillRect(-37, -5, 74, 10); ctx.fillRect(-5, -37, 10, 74); ctx.restore();
+            ctx.fillStyle = "#ff0044"; ctx.save(); ctx.translate(o.x + 40 - camera.x, o.y + 40 - camera.y);
+            ctx.rotate(gameTick * 0.12); ctx.fillRect(-40, -5, 80, 10); ctx.fillRect(-5, -40, 10, 80); ctx.restore();
         });
-        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.beginPath(); ctx.arc(c.x - camera.x + 10, c.y - camera.y + 10, 10, 0, Math.PI*2); ctx.fill(); } });
+        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.beginPath(); ctx.arc(c.x - camera.x + 10, c.y - camera.y + 10, 12, 0, Math.PI*2); ctx.fill(); } });
         player.draw();
     }
     requestAnimationFrame(loop);
