@@ -117,12 +117,13 @@ let state = 'MENU';
 let player, platforms = [], obstacles = [];
 let camera = { x: 0, y: 0 };
 let keys = {};
+let startX = 100; // Reference for 0m
 
 let progress = { 
     maxLevel: 1, 
     lastWorld: 0, 
     lastLevel: 1, 
-    lastCheckpoint: { x: 100, y: 400 }, // Standard starting spawn
+    lastCheckpoint: { x: 100, y: 500 }, 
     cloakEnabled: false 
 };
 
@@ -154,10 +155,13 @@ function toggleCloak() {
 }
 
 class Player {
-    constructor() { this.reset(); }
+    constructor() { 
+        this.trail = [];
+        this.reset(); 
+    }
     reset() {
         this.x = lastCheckpoint.x; 
-        this.y = lastCheckpoint.y - 60; // Spawn slightly above platform
+        this.y = lastCheckpoint.y - 60;
         this.vx = 0; this.vy = 0;
         this.w = 24; this.h = 48;
         this.grounded = false;
@@ -165,10 +169,15 @@ class Player {
         this.distance = 0;
         this.rot = 0;
         this.finished = false;
+        this.trail = [];
     }
 
     update() {
         if (this.finished) return;
+
+        // Store trail
+        this.trail.push({x: this.x + this.w/2, y: this.y + this.h/2});
+        if (this.trail.length > 20) this.trail.shift();
 
         let inputX = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
         if (inputX !== 0) {
@@ -215,11 +224,28 @@ class Player {
             this.vy = JUMP_FORCE; this.grounded = false;
         }
 
-        this.distance = Math.max(this.distance, Math.floor(this.x / 10));
+        // Distance relative to level start
+        this.distance = Math.max(0, Math.floor((this.x - startX) / 10));
         if (this.y > 2000) die();
     }
 
     draw() {
+        // Draw Red Trail
+        if (this.trail.length > 1) {
+            ctx.beginPath();
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 4;
+            ctx.lineJoin = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff0000';
+            ctx.moveTo(this.trail[0].x, this.trail[0].y);
+            for(let i=1; i<this.trail.length; i++) {
+                ctx.lineTo(this.trail[i].x, this.trail[i].y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
         ctx.save();
         ctx.translate(this.x + this.w/2, this.y + this.h/2);
         if (!this.grounded) this.rot += this.vx * 0.05; else this.rot = 0;
@@ -249,7 +275,6 @@ function saveProgress() { localStorage.setItem('parkourProSave_v3', JSON.stringi
 function startGameFromParams(wIdx, lNum, isRespawn = false) {
     currentWorldIndex = wIdx; currentLevel = lNum;
     
-    // Safety check: ensure we have a valid lastCheckpoint
     if (!lastCheckpoint || isNaN(lastCheckpoint.x)) {
         lastCheckpoint = { x: 100, y: 500 };
     }
@@ -258,6 +283,7 @@ function startGameFromParams(wIdx, lNum, isRespawn = false) {
         platforms = [];
         obstacles = [];
         generateLevel();
+        startX = 100; // Reset start reference
     }
 
     player = new Player();
@@ -270,20 +296,21 @@ function startGameFromParams(wIdx, lNum, isRespawn = false) {
 }
 
 function generateLevel() {
-    // ALWAYS start with a guaranteed platform at spawn
-    platforms.push({ x: lastCheckpoint.x - 100, y: lastCheckpoint.y, w: 400, h: 50 });
+    const initialY = lastCheckpoint.x === 100 ? 500 : lastCheckpoint.y;
+    platforms.push({ x: 0, y: initialY, w: 600, h: 50 });
 
-    let lastX = lastCheckpoint.x + 300, lastY = lastCheckpoint.y;
+    let lastX = 600, lastY = initialY;
     
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
         let gap = 180 + Math.random() * 200;
         let pW = 200 + Math.random() * 300;
         let nY = Math.max(250, Math.min(750, lastY + (Math.random() - 0.5) * 200));
         
-        const isCP = i === 20;
+        // MORE CHECKPOINTS: Every 8 platforms
+        const isCP = i > 0 && i % 8 === 0;
+        
         platforms.push({ x: lastX + gap, y: nY, w: pW, h: 40, checkpoint: isCP, activated: false });
         
-        // THINNER LASER BEAMS
         if (!isCP && Math.random() < 0.4) {
             obstacles.push({ 
                 x: lastX + gap + pW/2 - 7, 
@@ -304,8 +331,9 @@ function retryLevel() { startGameFromParams(currentWorldIndex, currentLevel, tru
 function continueGame() { startGameFromParams(progress.lastWorld, progress.lastLevel, false); }
 function openNav() { state = 'NAV'; document.getElementById('menu').classList.add('hidden'); document.getElementById('nav-screen').classList.remove('hidden'); renderWorldNav(); }
 function closeNav() { state = 'MENU'; document.getElementById('nav-screen').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
+
 function startGameFromNav() { 
-    lastCheckpoint = { x: 100, y: 500 }; // Reset checkpoint for new world selection
+    lastCheckpoint = { x: 100, y: 500 }; 
     startGameFromParams(navWorld, navLevel, false); 
 }
 
