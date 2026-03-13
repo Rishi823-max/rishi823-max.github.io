@@ -134,3 +134,148 @@ class Player {
                 broadcast("SECTOR COMPLETE! UNLOCKED " + worldStyles[currentSector+1].name);
                 loadWorld(currentSector+1);
             } else { broadcast("ASCENDED: ALL LEVELS COMPLETE"); }
+        }
+
+        if (!progress.isGod) {
+            obstacles.forEach(o => { if (this.x < o.x + o.w && this.x + 20 > o.x && this.y < o.y + o.h && this.y + 50 > o.y) die(); });
+            if (this.y > 3000) die();
+        }
+
+        this.trail.push({x: this.x + 10, y: this.y + 25});
+        if (this.trail.length > 15) this.trail.shift();
+
+        document.getElementById('coin-count').innerText = progress.coins.toLocaleString();
+        document.getElementById('dist-tag').innerText = Math.floor(this.x) + "/5000m";
+    }
+
+    draw() {
+        // Trail
+        this.trail.forEach((t, i) => {
+            ctx.globalAlpha = i / 15;
+            ctx.fillStyle = progress.trailCol;
+            ctx.fillRect(t.x - camera.x - 5, t.y - camera.y - 5, 10, 10);
+        });
+        
+        ctx.globalAlpha = 1; ctx.save();
+        ctx.translate(this.x + 10 - camera.x, this.y + 25 - camera.y);
+        ctx.scale(progress.pSize, progress.pSize);
+        ctx.rotate(this.flipRot);
+        
+        // Stickman Drawing
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.beginPath();
+        ctx.arc(0, -15, 6, 0, Math.PI*2); // Head
+        ctx.moveTo(0, -9); ctx.lineTo(0, 10); // Torso
+        ctx.moveTo(0, 0); ctx.lineTo(-12, 10); // Left Arm
+        ctx.moveTo(0, 0); ctx.lineTo(12, 10); // Right Arm
+        ctx.moveTo(0, 10); ctx.lineTo(-8, 25); // Left Leg
+        ctx.moveTo(0, 10); ctx.lineTo(8, 25); // Right Leg
+        ctx.stroke(); ctx.restore();
+    }
+}
+
+function die() { player.reset(0, 400); broadcast("RECONSTRUCTING..."); }
+
+function broadcast(msg) {
+    const b = document.getElementById('broadcast-msg');
+    b.innerText = msg; b.style.opacity = 1;
+    setTimeout(() => b.style.opacity = 0, 3000);
+}
+
+function updateMenu() {
+    const container = document.getElementById('level-buttons');
+    container.innerHTML = '';
+    Object.keys(worldStyles).forEach(id => {
+        const btn = document.createElement('button');
+        btn.className = 'gui-btn';
+        btn.innerText = worldStyles[id].name + (worldStyles[id].unlocked ? "" : " [LOCKED]");
+        btn.disabled = !worldStyles[id].unlocked;
+        btn.onclick = () => { loadWorld(parseInt(id)); togglePanel('level-menu', true); };
+        container.appendChild(btn);
+    });
+}
+
+function loadWorld(id) {
+    currentSector = id;
+    document.getElementById('world-tag').innerText = "SECTOR: " + worldStyles[id].name;
+    platforms = [{ x: 0, y: 500, w: 10000, h: 60 }];
+    obstacles = []; coins = []; gameTick = 0;
+    let lx = 1000;
+    for (let i = 0; i < 400; i++) {
+        let gap = 150 + Math.random() * 250;
+        let pw = 300 + Math.random() * 600;
+        let ny = 250 + Math.random() * 450;
+        platforms.push({ x: lx + gap, y: ny, w: pw, h: 40 });
+        if (i % 4 === 0) obstacles.push({ x: lx + gap + 200, y: ny - 70, w: 60, h: 60 });
+        lx += gap + pw;
+    }
+    player.x = 0;
+}
+
+function runCmd(cmd) {
+    const p = cmd.split(' ');
+    if (p[0] === '101165') document.getElementById('master-btn').classList.remove('hidden');
+    if (p[0] === '/god') progress.isGod = !progress.isGod;
+    if (p[0] === '/flight') progress.infiniteJet = !progress.infiniteJet;
+    if (p[0] === '/unlock') { Object.keys(worldStyles).forEach(k => worldStyles[k].unlocked = true); broadcast("ALL SECTORS ACCESSIBLE"); }
+    if (p[0] === '/size') progress.pSize = parseFloat(p[1]);
+    if (p[0] === '/lowgrav') currentGravity = 0.2;
+    if (p[0] === '/coins') progress.coins = p[1] === '1t' ? 1000000000000 : parseInt(p[1]);
+    if (p[0] === '/trail') progress.trailCol = p[1];
+    if (p[0] === '/say') broadcast(cmd.substring(5).toUpperCase());
+}
+
+function togglePanel(id, forceClose = false) {
+    const el = document.getElementById(id);
+    el.style.display = (forceClose || el.style.display === 'block') ? 'none' : 'block';
+}
+
+function startGame() {
+    player = new Player(); state = 'PLAY'; loadWorld(1);
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+}
+
+function loop() {
+    ctx.fillStyle = "#020205"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (state === 'PLAY') {
+        player.update();
+        camera.x += (player.x - canvas.width/3 - camera.x) * 0.1;
+        
+        platforms.forEach(p => {
+            if (p.x > camera.x - 1000 && p.x < camera.x + canvas.width + 1000) {
+                ctx.fillStyle = worldStyles[currentSector].color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 8);
+            }
+        });
+
+        obstacles.forEach(o => {
+            ctx.fillStyle = "#ff0044"; 
+            ctx.save(); ctx.translate(o.x + 30 - camera.x, o.y + 30 - camera.y);
+            ctx.rotate(gameTick * 0.1); ctx.fillRect(-30, -5, 60, 10); ctx.restore();
+        });
+
+        // The End Portal
+        ctx.fillStyle = "#ffd700"; ctx.shadowBlur = 40; ctx.shadowColor = "#ffd700";
+        ctx.fillRect(5000 - camera.x, 0, 100, canvas.height); ctx.shadowBlur = 0;
+
+        player.draw();
+    }
+    gameTick++; requestAnimationFrame(loop);
+}
+
+window.addEventListener('keydown', e => { 
+    keys[e.code] = true; 
+    if (e.key === 'Shift') {
+        const c = document.getElementById('admin-console');
+        c.style.display = c.style.display === 'block' ? 'none' : 'block';
+        if(c.style.display === 'block') document.getElementById('admin-input').focus();
+    }
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; if (['KeyW', 'Space', 'ArrowUp'].includes(e.code)) keys.jumpPressed = false; });
+document.getElementById('admin-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { runCmd(e.target.value); e.target.value = ''; document.getElementById('admin-console').style.display = 'none'; }
+});
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+loop();
+</script>
+</body>
+</html>
