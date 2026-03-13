@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Parkour </title>
+    <title>Neon Elite: Stick Flip Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -17,18 +17,18 @@
         .panel {
             position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
             background: rgba(10,10,10,0.98); border: 2px solid #00f2ff; padding: 25px;
-            color: #00f2ff; display: none; pointer-events: auto; width: 320px;
+            color: #00f2ff; display: none; pointer-events: auto; width: 340px;
             border-radius: 15px; box-shadow: 0 0 40px rgba(0, 242, 255, 0.5); z-index: 1000;
         }
         .close-btn { position: absolute; right: 10px; top: 10px; color: #ff0044; cursor: pointer; font-weight: bold; border: 1px solid #ff0044; padding: 2px 8px; border-radius: 4px; }
         .gui-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; width: 100%; padding: 10px; margin-bottom: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .gui-btn:hover { background: #00f2ff; color: #000; }
 
-        #admin-console { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 400px; background: #000; border: 2px solid #00f2ff; padding: 15px; pointer-events: auto; color: #00f2ff; display: none; }
+        #admin-console { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 450px; background: #000; border: 2px solid #00f2ff; padding: 15px; pointer-events: auto; color: #00f2ff; display: none; }
         #admin-input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 18px; }
 
-        #progress-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 300px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
-        #progress-bar { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; transition: 0.3s; }
+        #progress-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 300px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
     </style>
 </head>
 <body>
@@ -40,35 +40,38 @@
 
         <div id="hud" class="hidden">
             <div class="absolute top-6 left-6 hud-text">
-                <div class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">MOTION SECTOR</div>
+                <div class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">STICK SECTOR</div>
                 <div class="flex items-end gap-8">
-                    <div><div class="text-[10px] opacity-50">CREDITS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
+                    <div><div class="text-[10px] opacity-50 text-white">CREDITS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
                     <div><div id="life-tag" class="text-[10px] text-red-500 font-bold">LIVES: 0</div></div>
                 </div>
             </div>
             <div class="absolute top-6 right-6 flex flex-col items-end">
                 <button id="admin-toggle-btn" class="hidden btn-interact" onclick="togglePanel('admin-gui')">ADMIN PANEL</button>
-                <button id="shop-btn" class="btn-interact" onclick="togglePanel('shop-gui')">COIN SHOP</button>
+                <button id="shop-btn" class="btn-interact" onclick="togglePanel('shop-gui')">SHOP</button>
             </div>
         </div>
 
         <div id="admin-gui" class="panel">
             <div class="close-btn" onclick="togglePanel('admin-gui')">X</div>
             <button class="gui-btn" onclick="runCmd('/god')">God Mode</button>
-            <button class="gui-btn" onclick="runCmd('/rich')">Set 100k Coins</button>
+            <button class="gui-btn" onclick="runCmd('/coins 999999')">Instant Max Coins</button>
+            <button class="gui-btn" onclick="runCmd('/speed 2')">Double Speed</button>
+            <button class="gui-btn" onclick="runCmd('/jump 25')">Super Jump</button>
         </div>
 
         <div id="shop-gui" class="panel">
             <div class="close-btn" onclick="togglePanel('shop-gui')">X</div>
-            <button class="gui-btn" onclick="buyItem('neon', 500)">Neon Trail (500)</button>
-            <button class="gui-btn" onclick="buyItem('life', 10000000)">EXTRA LIFE (10M)</button>
+            <button class="gui-btn" onclick="buyItem('rainbow', 2000)">Rainbow Trail (2k)</button>
+            <button class="gui-btn" onclick="buyItem('glitch', 5000)">Glitch Trail (5k)</button>
+            <button class="gui-btn" onclick="buyItem('life', 1000000)">EXTRA LIFE (1M)</button>
         </div>
 
-        <div id="admin-console"><input type="text" id="admin-input" autocomplete="off"></div>
+        <div id="admin-console"><input type="text" id="admin-input" placeholder="/coins [val] | /speed [val] | /jump [val]" autocomplete="off"></div>
 
         <div id="menu" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center pointer-events-auto">
-            <h1 class="text-6xl font-black text-white mb-4 hud-text italic">NEON HUMAN</h1>
-            <button class="bg-cyan-500 text-black px-12 py-5 font-black rounded-full" onclick="startGame()">START RUN</button>
+            <h1 class="text-6xl font-black text-white mb-4 hud-text italic">STICK FLIP</h1>
+            <button class="bg-cyan-500 text-black px-12 py-5 font-black rounded-full" onclick="startGame()">INITIALIZE</button>
         </div>
     </div>
 
@@ -83,46 +86,43 @@ let camera = { x: 0, y: 0 };
 let keys = {};
 let lastCheckpoint = { x: 100, y: 400 };
 let gameTick = 0;
+let timeScale = 1;
 
-let progress = { coins: 0, isGod: false, trailType: 'none', lives: 0 };
+let progress = { coins: 0, isGod: false, trailType: 'none', lives: 0, jumpForce: -18, speed: 1.5 };
 
 class Player {
     constructor() { this.reset(); this.trail = []; }
     reset(posX = 100, posY = 400) {
         this.x = posX; this.y = posY; this.vx = 0; this.vy = 0;
-        this.w = 26; this.h = 54; this.grounded = false;
-        this.animState = 'idle';
+        this.w = 20; this.h = 50; this.grounded = false;
+        this.rotation = 0;
     }
 
     update() {
         let moveX = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
-        this.vx += moveX * 1.5;
+        this.vx += moveX * progress.speed * timeScale;
         this.vx *= 0.86;
         
         if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp']) && this.grounded && !keys.jumpPressed) {
-            this.vy = -18; this.grounded = false; keys.jumpPressed = true;
+            this.vy = progress.jumpForce * timeScale; this.grounded = false; keys.jumpPressed = true;
         }
-        this.vy += 0.8;
+        this.vy += 0.8 * timeScale;
 
         this.x += this.vx; this.y += this.vy;
 
-        this.animState = !this.grounded ? 'jump' : (Math.abs(this.vx) > 0.5 ? 'run' : 'idle');
+        // 360 Spin logic
+        if (!this.grounded) {
+            this.rotation += 0.15; 
+        } else {
+            this.rotation = 0;
+        }
 
         this.grounded = false;
         platforms.forEach(p => {
             if (p.moving) p.y = p.startY + Math.sin(gameTick * 0.05 + p.offset) * 80;
-
             if (this.x + this.w > p.x && this.x < p.x + p.w && this.vy >= 0 && this.y + this.h >= p.y && this.y + this.h <= p.y + 25) {
-                this.y = p.y - this.h;
-                this.vy = 0;
-                this.grounded = true;
-                // Stick to moving platforms
-                if (p.moving) this.y = p.y - this.h;
+                this.y = p.y - this.h; this.vy = 0; this.grounded = true;
             }
-        });
-
-        checkpoints.forEach(cp => {
-            if (!cp.active && this.x > cp.x) { cp.active = true; lastCheckpoint = { x: cp.x, y: cp.y - 100 }; }
         });
 
         if (!progress.isGod) {
@@ -130,19 +130,19 @@ class Player {
                 let ox = o.moving ? o.x + Math.sin(gameTick * 0.03) * 100 : o.x;
                 if (this.x < ox + o.w && this.x + this.w > ox && this.y < o.y + o.h && this.y + this.h > o.y) handleDeath();
             });
-            if (this.y > 2000) handleDeath();
+            if (this.y > 2500) handleDeath();
         }
 
         coins.forEach(c => { 
-            if (!c.collected && this.x < c.x + 25 && this.x + this.w > c.x && this.y < c.y + 25 && this.y + this.h > c.y) { 
-                c.collected = true; progress.coins += 20; 
+            if (!c.collected && this.x < c.x + 30 && this.x + this.w > c.x && this.y < c.y + 30 && this.y + this.h > c.y) { 
+                c.collected = true; progress.coins += 50; 
             } 
         });
 
         this.trail.push({x: this.x + this.w/2, y: this.y + this.h/2});
-        if (this.trail.length > 12) this.trail.shift();
+        if (this.trail.length > 15) this.trail.shift();
         
-        document.getElementById('progress-bar').style.width = (this.x / 30000 * 100) + "%";
+        document.getElementById('progress-bar').style.width = (this.x / 40000 * 100) + "%";
         document.getElementById('coin-count').innerText = progress.coins;
         document.getElementById('life-tag').innerText = "LIVES: " + progress.lives;
     }
@@ -150,26 +150,38 @@ class Player {
     draw() {
         if (progress.trailType !== 'none') {
             this.trail.forEach((t, i) => {
-                ctx.globalAlpha = i / 12; ctx.fillStyle = '#00f2ff';
-                ctx.beginPath(); ctx.arc(t.x - camera.x, t.y - camera.y, 8, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = i / 15;
+                if (progress.trailType === 'rainbow') ctx.fillStyle = `hsl(${gameTick + i*10}, 100%, 50%)`;
+                else if (progress.trailType === 'glitch') ctx.fillStyle = Math.random() > 0.5 ? '#00f2ff' : '#ff0044';
+                else ctx.fillStyle = '#00f2ff';
+                ctx.fillRect(t.x - camera.x - 4, t.y - camera.y - 4, 8, 8);
             });
         }
         ctx.globalAlpha = 1;
         ctx.save();
         ctx.translate(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y);
-        ctx.fillStyle = "#ffdbac"; ctx.fillRect(-6, -26, 12, 12);
-        ctx.fillStyle = "#333"; ctx.fillRect(-8, -14, 16, 20);
-        let legOffset = Math.sin(gameTick * 0.2) * 10;
-        ctx.fillStyle = "#111";
-        if (this.animState === 'run') {
-            ctx.fillRect(-7, 6, 6, 12 + legOffset); ctx.fillRect(1, 6, 6, 12 - legOffset);
-        } else { ctx.fillRect(-7, 6, 6, 14); ctx.fillRect(1, 6, 6, 14); }
+        ctx.rotate(this.rotation);
+        
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.lineCap = "round";
+        // Head
+        ctx.beginPath(); ctx.arc(0, -20, 6, 0, Math.PI*2); ctx.stroke();
+        // Body
+        ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(0, 10); ctx.stroke();
+        // Arms
+        let armW = Math.abs(this.vx) > 0.5 ? Math.sin(gameTick*0.2)*10 : 0;
+        ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(-10, -2 + armW); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(10, -2 - armW); ctx.stroke();
+        // Legs
+        let legW = Math.abs(this.vx) > 0.5 ? Math.sin(gameTick*0.2)*15 : 0;
+        ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(-8 - legW, 25); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(8 + legW, 25); ctx.stroke();
+        
         ctx.restore();
     }
 }
 
 function handleDeath() {
-    if (progress.lives > 0) { progress.lives--; player.y -= 150; player.vy = -5; }
+    if (progress.lives > 0) { progress.lives--; player.y -= 200; player.vy = -5; }
     else { player.reset(lastCheckpoint.x, lastCheckpoint.y); }
 }
 
@@ -181,27 +193,30 @@ function buyItem(type, price) {
 }
 
 function runCmd(cmd) {
-    if (cmd === '/god') progress.isGod = !progress.isGod;
-    if (cmd === '/rich') progress.coins += 100000;
+    const p = cmd.split(' ');
+    if (p[0] === '/god') progress.isGod = !progress.isGod;
+    if (p[0] === '/coins') progress.coins = parseInt(p[1]) || 0;
+    if (p[0] === '/speed') progress.speed = parseFloat(p[1]) || 1.5;
+    if (p[0] === '/jump') progress.jumpForce = -Math.abs(parseFloat(p[1])) || -18;
 }
 
 function togglePanel(id) {
-    const p = document.getElementById(id);
-    p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    const panel = document.getElementById(id);
+    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
 }
 
 function startGame() {
     platforms = [{ x: 0, y: 500, w: 2000, h: 60, moving: false }];
     obstacles = []; coins = []; checkpoints = []; gameTick = 0;
     let lx = 2000;
-    for (let i = 0; i < 80; i++) {
-        let gap = 80 + Math.random() * 120;
-        let pw = 300 + Math.random() * 300;
-        let ny = 300 + Math.random() * 400;
-        let isMoving = Math.random() > 0.7;
-        platforms.push({ x: lx + gap, y: ny, startY: ny, w: pw, h: 50, moving: isMoving, offset: Math.random() * 10 });
-        if (i % 8 === 0) checkpoints.push({ x: lx + gap, y: ny, active: false });
-        if (i % 5 === 0) obstacles.push({ x: lx + gap + 100, y: ny - 100, w: 80, h: 10, moving: Math.random() > 0.5 });
+    for (let i = 0; i < 100; i++) {
+        let gap = 90 + Math.random() * 150;
+        let pw = 300 + Math.random() * 400;
+        let ny = 300 + Math.random() * 450;
+        let isMoving = Math.random() > 0.6;
+        platforms.push({ x: lx + gap, y: ny, startY: ny, w: pw, h: 50, moving: isMoving, offset: Math.random()*10 });
+        if (i % 10 === 0) checkpoints.push({ x: lx + gap, y: ny, active: false });
+        if (i % 4 === 0) obstacles.push({ x: lx + gap + 100, y: ny - 100, w: 90, h: 10, moving: Math.random() > 0.4 });
         coins.push({ x: lx + gap + 50, y: ny - 60, collected: false });
         lx += gap + pw;
     }
@@ -211,7 +226,7 @@ function startGame() {
 }
 
 function loop() {
-    ctx.fillStyle = "#050505"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#020202"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state === 'PLAY') {
         gameTick++; player.update();
         camera.x += (player.x - canvas.width/3 - camera.x) * 0.1;
@@ -219,18 +234,19 @@ function loop() {
 
         platforms.forEach(p => {
             ctx.fillStyle = p.moving ? "#ff00ff" : "#00f2ff"; 
-            ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 6);
-            ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.fillRect(p.x - camera.x, p.y + 6 - camera.y, p.w, p.h);
+            ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 4);
+            ctx.fillStyle = "rgba(0, 242, 255, 0.05)"; ctx.fillRect(p.x - camera.x, p.y + 4 - camera.y, p.w, p.h);
         });
         checkpoints.forEach(cp => {
-            ctx.fillStyle = cp.active ? "#00ff00" : "#333";
-            ctx.fillRect(cp.x - camera.x, cp.y - 150 - camera.y, 10, 150);
+            ctx.fillStyle = cp.active ? "#00ff00" : "#222";
+            ctx.fillRect(cp.x - camera.x, cp.y - 100 - camera.y, 8, 100);
         });
         obstacles.forEach(o => { 
-            let ox = o.moving ? o.x + Math.sin(gameTick * 0.03) * 100 : o.x;
-            ctx.fillStyle = "#ff0044"; ctx.fillRect(ox - camera.x, o.y - camera.y, o.w, o.h); 
+            let ox = o.moving ? o.x + Math.sin(gameTick * 0.03) * 120 : o.x;
+            ctx.fillStyle = "#ff0044"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff0044";
+            ctx.fillRect(ox - camera.x, o.y - camera.y, o.w, o.h); ctx.shadowBlur = 0;
         });
-        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.fillRect(c.x - camera.x, c.y - camera.y, 20, 20); } });
+        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.fillRect(c.x - camera.x, c.y - camera.y, 24, 24); } });
         player.draw();
     }
     requestAnimationFrame(loop);
@@ -240,7 +256,11 @@ window.addEventListener('keydown', e => {
     keys[e.code] = true; 
     if (e.key === 'Shift') { document.getElementById('admin-console').style.display = 'block'; document.getElementById('admin-input').focus(); }
 });
-window.addEventListener('keyup', e => { keys[e.code] = false; if (['KeyW', 'Space', 'ArrowUp'].includes(e.code)) keys.jumpPressed = false; });
+window.addEventListener('keyup', e => { 
+    keys[e.code] = false; 
+    if (['KeyW', 'Space', 'ArrowUp'].includes(e.code)) keys.jumpPressed = false; 
+});
+
 document.getElementById('admin-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') {
         if (e.target.value === '101165') document.getElementById('admin-toggle-btn').classList.remove('hidden');
