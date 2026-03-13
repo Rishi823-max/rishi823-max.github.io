@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Parkour | Fixed Admin GUI</title>
+    <title>Neon Parkour </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -12,26 +12,26 @@
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; }
         
-        /* Fixed Admin GUI */
         #admin-gui {
             position: absolute; right: 20px; top: 100px;
-            background: rgba(0,0,0,0.85); border: 2px solid #00f2ff; padding: 15px;
-            color: #00f2ff; display: none; pointer-events: auto; width: 200px;
-            border-radius: 12px; box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+            background: rgba(0,0,0,0.9); border: 2px solid #00f2ff; padding: 15px;
+            color: #00f2ff; display: none; pointer-events: auto; width: 220px;
+            border-radius: 12px; box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
         }
-        .gui-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 5px; }
-        .status-on { color: #00ff00; text-shadow: 0 0 5px #00ff00; font-weight: bold; }
+        .gui-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 12px; border-bottom: 1px solid rgba(0,242,255,0.2); padding-bottom: 5px; }
+        .status-on { color: #00ff00; text-shadow: 0 0 8px #00ff00; font-weight: bold; }
         .status-off { color: #ff0044; font-weight: bold; }
 
         #admin-console {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            width: 400px; background: rgba(10,10,10,0.95); border: 2px solid #00f2ff;
-            padding: 12px; pointer-events: auto; color: #00f2ff; display: none;
+            position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+            width: 450px; background: #0a0a0a; border: 2px solid #00f2ff;
+            padding: 15px; pointer-events: auto; color: #00f2ff; display: none;
         }
-        #admin-input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 16px; }
+        #admin-input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 18px; }
         
-        .menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; }
-        .btn { background: #00f2ff; color: #000; padding: 12px 30px; cursor: pointer; font-weight: 900; border: none; border-radius: 4px; pointer-events: auto; }
+        .menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; }
+        .btn { background: #00f2ff; color: #000; padding: 15px 40px; cursor: pointer; font-weight: 900; border: none; border-radius: 4px; pointer-events: auto; transition: 0.2s; }
+        .btn:hover { transform: scale(1.05); background: #fff; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -42,32 +42,32 @@
     <div id="ui">
         <div id="hud" class="hidden">
             <div class="absolute top-6 left-6 hud-text">
-                <div id="world-tag" class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1">WORLD 1: NEON DISTRICT</div>
+                <div id="world-tag" class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">Loading District...</div>
                 <div class="flex items-end gap-8">
                     <div><div class="text-[10px] opacity-50">DISTANCE</div><div id="dist" class="text-3xl font-black">0m</div></div>
-                    <div><div class="text-[10px] opacity-50 text-yellow-400">COINS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
+                    <div><div class="text-[10px] opacity-50 text-yellow-400">CREDITS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
                 </div>
             </div>
         </div>
 
         <div id="admin-gui">
-            <div class="text-xs font-black mb-4 border-b-2 border-cyan-400 pb-2 tracking-widest text-center">ADMIN PANEL</div>
+            <div class="text-sm font-black mb-4 border-b-2 border-cyan-400 pb-2 tracking-widest text-center">ADMIN PRIVILEGES</div>
             <div class="gui-row"><span>GOD_MODE</span><span id="gui-god" class="status-off">OFF</span></div>
-            <div class="gui-row"><span>FLIGHT</span><span id="gui-fly" class="status-off">OFF</span></div>
+            <div class="gui-row"><span>FLIGHT_PRO</span><span id="gui-fly" class="status-off">OFF</span></div>
             <div class="gui-row"><span>DBL_JUMP</span><span id="gui-jump" class="status-off">OFF</span></div>
-            <div class="gui-row"><span>WORLD</span><span id="gui-world" class="text-white">1</span></div>
-            <div class="text-[9px] opacity-50 mt-2">PRESS SHIFT TO COMMAND</div>
+            <div class="gui-row"><span>WORLD_ID</span><span id="gui-world" class="text-white">1</span></div>
+            <div class="text-[10px] text-center opacity-40 italic">System Overridden</div>
         </div>
 
         <div id="admin-console">
-            <div class="text-[9px] opacity-50 mb-1">TERMINAL ACCESS [KEY: 101165]</div>
-            <input type="text" id="admin-input" placeholder="Enter Authentication..." autocomplete="off">
+            <div class="text-[10px] opacity-50 mb-1">ENCRYPTED INPUT MODULE</div>
+            <input type="text" id="admin-input" placeholder="Awaiting Input..." autocomplete="off">
         </div>
 
         <div id="menu" class="menu-overlay">
-            <h1 class="text-7xl font-black text-white mb-2 italic hud-text">PARKOUR PRO</h1>
-            <p class="text-cyan-400 text-xs mb-8 tracking-[0.5em]">SYSTEM VERSION 2.1</p>
-            <button class="btn" onclick="startGame()">START RUN</button>
+            <h1 class="text-7xl font-black text-white mb-2 italic hud-text tracking-tighter">NEON ELITE</h1>
+            <p class="text-cyan-400 text-xs mb-10 tracking-[0.6em]">AUTHORIZED ACCESS ONLY</p>
+            <button class="btn" onclick="startGame()">INITIALIZE</button>
         </div>
     </div>
 
@@ -87,8 +87,8 @@ let auraTimer = 0;
 
 const worlds = [
     { name: "NEON DISTRICT", color: "#00f2ff", bg: "#050505" },
-    { name: "MAGMA CORE", color: "#ff4400", bg: "#1a0500" },
-    { name: "DEEP SPACE", color: "#aa00ff", bg: "#00051a" }
+    { name: "VOID SECTOR", color: "#ff00ff", bg: "#0a000a" },
+    { name: "SOLAR FLARE", color: "#ffaa00", bg: "#0f0500" }
 ];
 
 let progress = { coins: 0, hasJetpack: false, isGod: false, doubleJump: false, worldIndex: 0 };
@@ -97,35 +97,34 @@ class Player {
     constructor() { this.reset(); }
     reset() {
         this.x = 100; this.y = 400; this.vx = 0; this.vy = 0;
-        this.w = 20; this.h = 46; this.grounded = false;
+        this.w = 22; this.h = 48; this.grounded = false;
         this.sliding = false; this.rot = 0; this.jumpCount = 0;
     }
 
     update() {
         let moveX = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
-        this.vx += moveX * (this.grounded ? 1.2 : 0.7);
+        this.vx += moveX * (this.grounded ? 1.3 : 0.8);
         this.vx *= 0.88;
         
-        // JUMP LOGIC
         if (keys['KeyW'] || keys['Space'] || keys['ArrowUp']) {
             if (this.grounded && !keys.jumpPressed) {
-                this.vy = -16.5; // SUPER JUMP
+                this.vy = -18; // ELITE JUMP HEIGHT
                 this.grounded = false; this.jumpCount = 1; keys.jumpPressed = true;
             } else if (progress.doubleJump && this.jumpCount < 2 && !keys.jumpPressed) {
-                this.vy = -14; this.jumpCount = 2; keys.jumpPressed = true;
+                this.vy = -15; this.jumpCount = 2; keys.jumpPressed = true;
             }
         }
 
-        if (progress.hasJetpack && (keys['KeyW'] || keys['Space'])) { this.vy -= 0.95; this.rot += 0.3; } 
+        if (progress.hasJetpack && (keys['KeyW'] || keys['Space'])) { this.vy -= 1.0; this.rot += 0.35; } 
         else { this.vy += 0.75; }
 
         this.x += this.vx; this.y += this.vy;
         if (!this.grounded) this.rot += this.vx * 0.15; else this.rot = 0;
         
         if (keys['KeyS'] || keys['ArrowDown']) {
-            if (!this.sliding) { this.sliding = true; this.h = 20; this.y += 26; }
+            if (!this.sliding) { this.sliding = true; this.h = 22; this.y += 26; }
         } else if (this.sliding) {
-            this.h = 46; this.y -= 26; this.sliding = false;
+            this.h = 48; this.y -= 26; this.sliding = false;
         }
 
         this.grounded = false;
@@ -137,8 +136,7 @@ class Player {
 
         if (!progress.isGod) {
             obstacles.forEach(o => {
-                // Forgiving hitboxes (shrink obstacle bounds by 4px)
-                if (this.x < o.x + o.w - 4 && this.x + this.w > o.x + 4 && this.y < o.y + o.h - 4 && this.y + this.h > o.y + 4) die();
+                if (this.x < o.x + o.w - 5 && this.x + this.w > o.x + 5 && this.y < o.y + o.h - 5 && this.y + this.h > o.y + 5) die();
             });
             if (this.y > 1500) die();
         }
@@ -149,8 +147,8 @@ class Player {
         }
 
         coins.forEach(c => {
-            if (!c.collected && this.x < c.x + 20 && this.x + this.w > c.x && this.y < c.y + 20 && this.y + this.h > c.y) {
-                c.collected = true; progress.coins += 10;
+            if (!c.collected && this.x < c.x + 25 && this.x + this.w > c.x && this.y < c.y + 25 && this.y + this.h > c.y) {
+                c.collected = true; progress.coins += 50; // MORE COINS
             }
         });
 
@@ -159,25 +157,27 @@ class Player {
 
     draw() {
         if (progress.isGod) {
-            auraTimer += 0.1;
+            auraTimer += 0.15;
             ctx.beginPath();
             ctx.strokeStyle = worlds[progress.worldIndex].color;
-            ctx.lineWidth = 3;
-            ctx.arc(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y, 35 + Math.sin(auraTimer)*8, 0, Math.PI*2);
+            ctx.lineWidth = 4;
+            ctx.arc(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y, 40 + Math.sin(auraTimer)*10, 0, Math.PI*2);
             ctx.stroke();
+            ctx.shadowBlur = 15; ctx.shadowColor = worlds[progress.worldIndex].color;
         }
 
         ctx.save();
         ctx.translate(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y);
         ctx.rotate(this.rot);
         ctx.fillStyle = "#fff";
-        if (this.sliding) { ctx.fillRect(-15, -10, 30, 20); } 
+        if (this.sliding) { ctx.fillRect(-16, -11, 32, 22); } 
         else {
-            ctx.beginPath(); ctx.arc(0, -18, 6, 0, Math.PI*2); ctx.fill(); 
-            ctx.fillRect(-2, -12, 4, 16); ctx.fillRect(-8, -10, 16, 3); 
-            ctx.fillRect(-6, 4, 4, 12); ctx.fillRect(2, 4, 4, 12); 
+            ctx.beginPath(); ctx.arc(0, -20, 7, 0, Math.PI*2); ctx.fill(); 
+            ctx.fillRect(-2, -14, 4, 18); ctx.fillRect(-9, -12, 18, 4); 
+            ctx.fillRect(-7, 4, 5, 14); ctx.fillRect(2, 4, 5, 14); 
         }
         ctx.restore();
+        ctx.shadowBlur = 0;
     }
 }
 
@@ -193,40 +193,44 @@ function updateGui() {
 }
 
 function adminCommand(input) {
-    const val = input.trim();
-    const args = val.toLowerCase().split(' ');
+    const raw = input.trim();
+    const parts = raw.toLowerCase().split(' ');
     
     if (!isAdminUnlocked) {
-        if (val === "101165") { isAdminUnlocked = true; adminGui.style.display = "block"; updateGui(); }
+        if (raw === "101165") { 
+            isAdminUnlocked = true; 
+            adminGui.style.display = "block"; 
+            updateGui(); 
+        }
     } else {
-        if (args[0] === "/god") progress.isGod = !progress.isGod;
-        if (args[0] === "/fly") progress.hasJetpack = !progress.hasJetpack;
-        if (args[0] === "/double" && args[1] === "jump") progress.doubleJump = !progress.doubleJump;
-        if (args[0] === "/skip" && args[1] === "level") { progress.worldIndex = (progress.worldIndex + 1) % worlds.length; startGame(); }
-        if (args[0] === "/give" && args[1] === "coins") progress.coins += parseInt(args[2]) || 0;
+        if (parts[0] === "/god") progress.isGod = !progress.isGod;
+        if (parts[0] === "/fly") progress.hasJetpack = !progress.hasJetpack;
+        if (parts[0] === "/double" && parts[1] === "jump") progress.doubleJump = !progress.doubleJump;
+        if (parts[0] === "/skip" && parts[1] === "level") { progress.worldIndex = (progress.worldIndex + 1) % worlds.length; startGame(); }
+        if (parts[0] === "/give" && parts[1] === "coins") progress.coins += parseInt(parts[2]) || 1000;
         updateGui();
     }
     adminConsole.style.display = "none"; adminInput.value = "";
 }
 
 function generateLevel() {
-    platforms = [{ x: 0, y: 500, w: 1000, h: 50 }];
+    platforms = [{ x: 0, y: 500, w: 1200, h: 50 }];
     obstacles = []; coins = [];
-    let lx = 1000;
-    for (let i = 0; i < 40; i++) {
-        let gap = 60 + Math.random() * 100;
-        let pw = 250 + Math.random() * 350;
-        let ny = 350 + Math.random() * 250;
+    let lx = 1200;
+    for (let i = 0; i < 45; i++) {
+        let gap = 50 + Math.random() * 80; // Easier Gaps
+        let pw = 300 + Math.random() * 400;
+        let ny = 300 + Math.random() * 300;
         platforms.push({ x: lx + gap, y: ny, w: pw, h: 40 });
         
-        if (i % 4 === 0) {
-            if (Math.random() > 0.5) { // SLIDE LASER (Forgiving height)
-                obstacles.push({ x: lx + gap + 50, y: ny - 90, w: 100, h: 5 }); 
-            } else { // JUMP PILLAR
-                obstacles.push({ x: lx + gap + 100, y: ny - 200, w: 10, h: 200 });
+        if (i % 5 === 0) {
+            if (Math.random() > 0.5) { // Easier Slide Laser
+                obstacles.push({ x: lx + gap + 60, y: ny - 95, w: 110, h: 5 }); 
+            } else { // Shorter Jump Pillar
+                obstacles.push({ x: lx + gap + 150, y: ny - 180, w: 10, h: 180 });
             }
         }
-        if (Math.random() > 0.4) coins.push({ x: lx + gap + 40, y: ny - 60, collected: false });
+        if (Math.random() > 0.4) coins.push({ x: lx + gap + 60, y: ny - 70, collected: false });
         lx += gap + pw;
     }
 }
@@ -240,7 +244,11 @@ function startGame() {
     updateGui();
 }
 
-function die() { state = 'MENU'; document.getElementById('menu').classList.remove('hidden'); }
+function die() { 
+    state = 'MENU'; 
+    document.getElementById('menu').classList.remove('hidden'); 
+    document.getElementById('hud').classList.add('hidden');
+}
 
 function loop() {
     const curWorld = worlds[progress.worldIndex];
@@ -252,15 +260,22 @@ function loop() {
         camera.y += (player.y - canvas.height/2 - camera.y) * 0.15;
 
         platforms.forEach(p => {
-            ctx.fillStyle = curWorld.color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 5);
-            ctx.fillStyle = "rgba(255,255,255,0.03)"; ctx.fillRect(p.x - camera.x, p.y + 5 - camera.y, p.w, p.h);
+            ctx.fillStyle = curWorld.color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 6);
+            ctx.fillStyle = "rgba(255,255,255,0.02)"; ctx.fillRect(p.x - camera.x, p.y + 6 - camera.y, p.w, p.h);
         });
         obstacles.forEach(o => {
-            ctx.fillStyle = "#ff0044"; ctx.shadowBlur = 10; ctx.shadowColor = "#ff0044";
+            ctx.fillStyle = "#ff0044"; ctx.shadowBlur = 15; ctx.shadowColor = "#ff0044";
             ctx.fillRect(o.x - camera.x, o.y - camera.y, o.w, o.h);
             ctx.shadowBlur = 0;
         });
-        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.fillRect(c.x - camera.x, c.y - camera.y, 15, 15); } });
+        coins.forEach(c => { 
+            if (!c.collected) { 
+                ctx.fillStyle = "#ffd700"; 
+                ctx.shadowBlur = 10; ctx.shadowColor = "#ffd700";
+                ctx.fillRect(c.x - camera.x, c.y - camera.y, 18, 18); 
+                ctx.shadowBlur = 0;
+            } 
+        });
         player.draw();
         document.getElementById('coin-count').innerText = progress.coins;
     }
