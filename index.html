@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Parkour </title>
+    <title>Neon Elite: Human Evolution</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -12,24 +12,22 @@
         #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
         .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; }
         
-        /* Admin Button - Appears after unlock */
-        #admin-toggle-btn {
-            position: absolute; right: 20px; top: 20px;
+        #admin-toggle-btn, #shop-btn {
             background: #00f2ff; color: #000; padding: 10px;
             font-weight: 900; border-radius: 5px; cursor: pointer;
-            pointer-events: auto; display: none; box-shadow: 0 0 15px #00f2ff;
+            pointer-events: auto; box-shadow: 0 0 15px #00f2ff; margin-bottom: 10px;
         }
 
-        #admin-gui {
+        .panel {
             position: absolute; right: 20px; top: 80px;
             background: rgba(0,0,0,0.95); border: 2px solid #00f2ff; padding: 15px;
-            color: #00f2ff; display: none; pointer-events: auto; width: 220px;
+            color: #00f2ff; display: none; pointer-events: auto; width: 240px;
             border-radius: 12px; box-shadow: 0 0 25px rgba(0, 242, 255, 0.5);
         }
         .gui-btn {
             background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff;
             color: #00f2ff; width: 100%; padding: 8px; margin-bottom: 8px;
-            cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.2s;
+            cursor: pointer; font-size: 10px; font-weight: bold;
         }
         .gui-btn:hover { background: #00f2ff; color: #000; }
         .active { background: #00ff00 !important; color: #000 !important; border-color: #00ff00 !important; }
@@ -40,10 +38,7 @@
             padding: 15px; pointer-events: auto; color: #00f2ff; display: none;
         }
         #admin-input { background: transparent; border: none; color: #fff; width: 100%; outline: none; font-size: 18px; }
-        
         .menu-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; }
-        .btn-main { background: #00f2ff; color: #000; padding: 15px 40px; cursor: pointer; font-weight: 900; border: none; border-radius: 4px; pointer-events: auto; }
-        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -53,182 +48,180 @@
     <div id="ui">
         <div id="hud" class="hidden">
             <div class="absolute top-6 left-6 hud-text">
-                <div id="world-tag" class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">Initializing...</div>
+                <div id="world-tag" class="text-[10px] tracking-[0.3em] text-cyan-400 font-bold mb-1 uppercase">DISTRICT 1</div>
                 <div class="flex items-end gap-8">
-                    <div><div class="text-[10px] opacity-50">DIST</div><div id="dist" class="text-3xl font-black">0m</div></div>
+                    <div><div class="text-[10px] opacity-50 text-white">DIST</div><div id="dist" class="text-3xl font-black text-white">0m</div></div>
                     <div><div class="text-[10px] opacity-50 text-yellow-400">COINS</div><div id="coin-count" class="text-3xl font-black text-yellow-400">0</div></div>
                 </div>
             </div>
-            <div id="admin-toggle-btn" onclick="toggleGui()">ADMIN MENU</div>
+            <div class="absolute top-6 right-6 flex flex-col items-end">
+                <div id="admin-toggle-btn" class="hidden" onclick="togglePanel('admin-gui')">ADMIN PANEL</div>
+                <div id="shop-btn" onclick="togglePanel('shop-gui')">COIN SHOP</div>
+            </div>
         </div>
 
-        <div id="admin-gui">
-            <div class="text-xs font-black mb-4 border-b border-cyan-400 pb-2 text-center">ELITE OVERRIDE</div>
-            <button id="btn-god" class="gui-btn" onclick="runCmd('/god')">TOGGLE GOD MODE</button>
-            <button id="btn-fly" class="gui-btn" onclick="runCmd('/fly')">TOGGLE FLIGHT</button>
-            <button id="btn-jump" class="gui-btn" onclick="runCmd('/double jump')">TOGGLE D-JUMP</button>
-            <button class="gui-btn" onclick="runCmd('/give coins 5000')">GIVE 5000 COINS</button>
-            <button class="gui-btn" onclick="runCmd('/skip level')">NEXT WORLD</button>
+        <div id="admin-gui" class="panel">
+            <div class="text-xs font-black mb-4 border-b border-cyan-400 pb-2 text-center text-white">CHEAT MENU</div>
+            <button id="btn-god" class="gui-btn" onclick="runCmd('/god')">GOD MODE</button>
+            <button id="btn-fly" class="gui-btn" onclick="runCmd('/fly')">FLIGHT</button>
+            <button class="gui-btn" onclick="runCmd('/give coins 1000')">+1000 COINS</button>
+        </div>
+
+        <div id="shop-gui" class="panel">
+            <div class="text-xs font-black mb-4 border-b border-yellow-400 pb-2 text-center text-yellow-400">TRAIL SHOP</div>
+            <button class="gui-btn" onclick="buyTrail('neon', 100)">NEON TRAIL (100)</button>
+            <button class="gui-btn" onclick="buyTrail('fire', 500)">FIRE TRAIL (500)</button>
+            <button class="gui-btn" onclick="buyTrail('ghost', 1000)">GHOST TRAIL (1000)</button>
         </div>
 
         <div id="admin-console">
-            <div class="text-[10px] opacity-50 mb-1 italic">Enter Secret Key...</div>
-            <input type="text" id="admin-input" autocomplete="off">
+            <input type="text" id="admin-input" placeholder="Enter key..." autocomplete="off">
         </div>
 
         <div id="menu" class="menu-overlay">
-            <h1 class="text-7xl font-black text-white mb-2 italic hud-text tracking-tighter">NEON ELITE</h1>
-            <button class="btn-main" onclick="startGame()">START RUN</button>
+            <h1 class="text-7xl font-black text-white mb-2 italic hud-text">NEON RUNNER</h1>
+            <button class="bg-cyan-500 text-black px-10 py-4 font-black rounded" onclick="startGame()">START RUN</button>
         </div>
     </div>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const adminConsole = document.getElementById('admin-console');
 const adminInput = document.getElementById('admin-input');
-const adminGui = document.getElementById('admin-gui');
-const adminToggleBtn = document.getElementById('admin-toggle-btn');
 
 let state = 'MENU';
-let player, platforms = [], obstacles = [], coins = [];
+let player, platforms = [], obstacles = [], coins = [], powerups = [];
 let camera = { x: 0, y: 0 };
 let keys = {};
 let isAdminUnlocked = false;
 
 const worlds = [
-    { name: "NEON CITY", color: "#00f2ff", bg: "#050505" },
-    { name: "CYBER VOID", color: "#ff00ff", bg: "#0a000a" }
+    { name: "NEON CITY", color: "#00f2ff", bg: "#050505", particles: [] },
+    { name: "VOID SPACE", color: "#ff00ff", bg: "#000011", particles: [] }
 ];
 
-let progress = { coins: 0, hasJetpack: false, isGod: false, doubleJump: false, worldIndex: 0 };
+let progress = { 
+    coins: 0, 
+    hasJetpack: false, 
+    isGod: false, 
+    worldIndex: 0,
+    trailType: 'none',
+    ownedTrails: ['none']
+};
 
 class Player {
-    constructor() { this.reset(); }
+    constructor() { this.reset(); this.trail = []; }
     reset() {
         this.x = 100; this.y = 400; this.vx = 0; this.vy = 0;
-        this.w = 22; this.h = 48; this.grounded = false;
-        this.sliding = false; this.rot = 0; this.jumpCount = 0;
+        this.w = 24; this.h = 52; this.grounded = false;
+        this.sliding = false; this.rot = 0; this.speedMult = 1;
     }
 
     update() {
         let moveX = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
-        this.vx += moveX * (this.grounded ? 1.4 : 0.8);
-        this.vx *= 0.88;
+        this.vx += moveX * 1.5 * this.speedMult;
+        this.vx *= 0.85;
         
-        if (keys['KeyW'] || keys['Space'] || keys['ArrowUp']) {
-            if (this.grounded && !keys.jumpPressed) {
-                this.vy = -19.5; // Massive Jump
-                this.grounded = false; this.jumpCount = 1; keys.jumpPressed = true;
-            } else if (progress.doubleJump && this.jumpCount < 2 && !keys.jumpPressed) {
-                this.vy = -16; this.jumpCount = 2; keys.jumpPressed = true;
-            }
+        if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp']) && this.grounded && !keys.jumpPressed) {
+            this.vy = -18; this.grounded = false; keys.jumpPressed = true;
         }
 
-        if (progress.hasJetpack && (keys['KeyW'] || keys['Space'])) { this.vy -= 1.1; this.rot += 0.3; } 
-        else { this.vy += 0.85; }
+        if (progress.hasJetpack && (keys['KeyW'] || keys['Space'])) this.vy -= 1.1;
+        else this.vy += 0.85;
 
         this.x += this.vx; this.y += this.vy;
-        if (!this.grounded) this.rot += this.vx * 0.15; else this.rot = 0;
-        
-        if (keys['KeyS'] || keys['ArrowDown']) {
-            if (!this.sliding) { this.sliding = true; this.h = 24; this.y += 24; }
-        } else if (this.sliding) {
-            this.h = 48; this.y -= 24; this.sliding = false;
-        }
 
-        // --- ENHANCED COLLISION ENGINE ---
-        let wasGrounded = this.grounded;
         this.grounded = false;
         for (let p of platforms) {
-            // Check if player is above platform and falling
-            if (this.x + this.w > p.x && this.x < p.x + p.w) {
-                if (this.vy >= 0 && this.y + this.h >= p.y && this.y + this.h <= p.y + 25) {
-                    this.y = p.y - this.h;
-                    this.vy = 0;
-                    this.grounded = true;
-                    this.jumpCount = 0;
-                }
+            if (this.x + this.w > p.x && this.x < p.x + p.w && this.vy >= 0 && this.y + this.h >= p.y && this.y + this.h <= p.y + 20) {
+                this.y = p.y - this.h; this.vy = 0; this.grounded = true;
             }
         }
 
         if (!progress.isGod) {
-            obstacles.forEach(o => {
-                if (this.x < o.x + o.w - 6 && this.x + this.w > o.x + 6 && this.y < o.y + o.h - 6 && this.y + this.h > o.y + 6) die();
-            });
-            if (this.y > 2000) die();
+            obstacles.forEach(o => { if (this.x < o.x + o.w && this.x + this.w > o.x && this.y < o.y + o.h && this.y + this.h > o.y) die(); });
+            if (this.y > 1500) die();
         }
 
-        if (this.x > platforms[platforms.length-1].x + 300) {
-            progress.worldIndex = (progress.worldIndex + 1) % worlds.length;
-            startGame();
-        }
-
-        coins.forEach(c => {
-            if (!c.collected && this.x < c.x + 25 && this.x + this.w > c.x && this.y < c.y + 25 && this.y + this.h > c.y) {
-                c.collected = true; progress.coins += 100;
+        // Power-Up Collision
+        powerups.forEach((p, i) => {
+            if (!p.taken && this.x < p.x + 30 && this.x + this.w > p.x && this.y < p.y + 30 && this.y + this.h > p.y) {
+                p.taken = true;
+                if (p.type === 'speed') { this.speedMult = 2; setTimeout(() => this.speedMult = 1, 5000); }
             }
         });
 
-        document.getElementById('dist').innerText = Math.max(0, Math.floor((this.x - 100) / 10)) + "m";
+        coins.forEach(c => { if (!c.collected && this.x < c.x + 20 && this.x + this.w > c.x && this.y < c.y + 20 && this.y + this.h > c.y) { c.collected = true; progress.coins += 10; } });
+
+        this.trail.push({x: this.x + this.w/2, y: this.y + this.h/2});
+        if (this.trail.length > 10) this.trail.shift();
+        
+        document.getElementById('dist').innerText = Math.floor(this.x / 10) + "m";
+        document.getElementById('coin-count').innerText = progress.coins;
     }
 
     draw() {
-        if (progress.isGod) {
-            ctx.beginPath(); ctx.strokeStyle = "#00f2ff"; ctx.lineWidth = 3;
-            ctx.arc(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y, 42, 0, Math.PI*2);
-            ctx.stroke();
+        // Draw Trail
+        if (progress.trailType !== 'none') {
+            this.trail.forEach((t, i) => {
+                ctx.globalAlpha = i / 10;
+                ctx.fillStyle = progress.trailType === 'neon' ? '#00f2ff' : progress.trailType === 'fire' ? '#ff4400' : '#ffffff';
+                ctx.fillRect(t.x - camera.x - 5, t.y - camera.y - 5, 10, 10);
+            });
+            ctx.globalAlpha = 1;
         }
+
         ctx.save();
         ctx.translate(this.x + this.w/2 - camera.x, this.y + this.h/2 - camera.y);
-        ctx.rotate(this.rot);
-        ctx.fillStyle = "#fff";
-        if (this.sliding) { ctx.fillRect(-16, -12, 32, 24); } 
-        else {
-            ctx.fillRect(-this.w/2, -this.h/2, this.w, this.h); // Solid block for better visuals
-        }
+        
+        // DRAW HUMAN
+        ctx.fillStyle = "#ffdbac"; // Skin
+        ctx.fillRect(-6, -26, 12, 12); // Head
+        ctx.fillStyle = "#333"; // Shirt
+        ctx.fillRect(-8, -14, 16, 18); // Torso
+        ctx.fillStyle = "#111"; // Pants
+        ctx.fillRect(-8, 4, 6, 12); ctx.fillRect(2, 4, 6, 12); // Legs
         ctx.restore();
     }
 }
 
+function buyTrail(type, price) {
+    if (progress.coins >= price) {
+        progress.coins -= price;
+        progress.trailType = type;
+        alert(type.toUpperCase() + " TRAIL EQUIPPED!");
+    }
+}
+
 function runCmd(cmd) {
-    const parts = cmd.toLowerCase().split(' ');
-    if (parts[0] === "/god") progress.isGod = !progress.isGod;
-    if (parts[0] === "/fly") progress.hasJetpack = !progress.hasJetpack;
-    if (parts[0] === "/double") progress.doubleJump = !progress.doubleJump;
-    if (parts[0] === "/give") progress.coins += parseInt(parts[2]);
-    if (parts[0] === "/skip") { progress.worldIndex = (progress.worldIndex + 1) % worlds.length; startGame(); }
-    updateGuiStates();
+    if (cmd === '/god') progress.isGod = !progress.isGod;
+    if (cmd === '/fly') progress.hasJetpack = !progress.hasJetpack;
+    if (cmd.includes('/give')) progress.coins += 1000;
 }
 
-function updateGuiStates() {
-    document.getElementById('btn-god').classList.toggle('active', progress.isGod);
-    document.getElementById('btn-fly').classList.toggle('active', progress.hasJetpack);
-    document.getElementById('btn-jump').classList.toggle('active', progress.doubleJump);
-}
-
-function toggleGui() {
-    adminGui.style.display = adminGui.style.display === "block" ? "none" : "block";
+function togglePanel(id) {
+    const p = document.getElementById(id);
+    p.style.display = p.style.display === 'block' ? 'none' : 'block';
 }
 
 function startGame() {
-    platforms = [{ x: 0, y: 500, w: 1500, h: 50 }];
-    obstacles = []; coins = [];
-    let lx = 1500;
-    for (let i = 0; i < 40; i++) {
-        let gap = 40 + Math.random() * 80; // Tight gaps
+    platforms = [{ x: 0, y: 500, w: 2000, h: 50 }];
+    obstacles = []; coins = []; powerups = [];
+    let lx = 2000;
+    for (let i = 0; i < 50; i++) {
+        let gap = 60 + Math.random() * 100;
         let pw = 400 + Math.random() * 300;
-        let ny = 300 + Math.random() * 300;
+        let ny = 350 + Math.random() * 250;
         platforms.push({ x: lx + gap, y: ny, w: pw, h: 40 });
-        if (i % 5 === 0) obstacles.push({ x: lx + gap + 100, y: ny - 100, w: 80, h: 5 }); 
-        if (Math.random() > 0.4) coins.push({ x: lx + gap + 50, y: ny - 70, collected: false });
+        if (i % 6 === 0) obstacles.push({ x: lx + gap + 100, y: ny - 100, w: 100, h: 10 });
+        if (i % 10 === 0) powerups.push({ x: lx + gap + 50, y: ny - 60, type: 'speed', taken: false });
+        coins.push({ x: lx + gap + 20, y: ny - 50, collected: false });
         lx += gap + pw;
     }
-    if (!player) player = new Player();
-    player.reset(); state = 'PLAY';
+    player = new Player();
+    state = 'PLAY';
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('hud').classList.remove('hidden');
-    document.getElementById('world-tag').innerText = worlds[progress.worldIndex].name;
 }
 
 function die() { state = 'MENU'; document.getElementById('menu').classList.remove('hidden'); }
@@ -237,35 +230,37 @@ function loop() {
     ctx.fillStyle = worlds[progress.worldIndex].bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (state === 'PLAY') {
         player.update();
-        camera.x += (player.x - canvas.width/3 - camera.x) * 0.15;
-        camera.y += (player.y - canvas.height/2 - camera.y) * 0.15;
+        camera.x += (player.x - canvas.width/3 - camera.x) * 0.1;
+        camera.y += (player.y - canvas.height/2 - camera.y) * 0.1;
+
         platforms.forEach(p => {
-            ctx.fillStyle = worlds[progress.worldIndex].color; ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 6);
-            ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.fillRect(p.x - camera.x, p.y + 6 - camera.y, p.w, p.h);
+            ctx.fillStyle = worlds[progress.worldIndex].color;
+            ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 6);
         });
         obstacles.forEach(o => { ctx.fillStyle = "#ff0044"; ctx.fillRect(o.x - camera.x, o.y - camera.y, o.w, o.h); });
-        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.fillRect(c.x - camera.x, c.y - camera.y, 20, 20); } });
+        coins.forEach(c => { if (!c.collected) { ctx.fillStyle = "#ffd700"; ctx.fillRect(c.x - camera.x, c.y - camera.y, 15, 15); } });
+        powerups.forEach(p => { if (!p.taken) { ctx.fillStyle = "#00ff00"; ctx.beginPath(); ctx.arc(p.x - camera.x, p.y - camera.y, 10, 0, Math.PI*2); ctx.fill(); } });
         player.draw();
-        document.getElementById('coin-count').innerText = progress.coins;
     }
     requestAnimationFrame(loop);
 }
 
-window.addEventListener('keydown', e => {
-    keys[e.code] = true;
-    if (e.key === 'Shift') { adminConsole.style.display = "block"; adminInput.focus(); }
+window.addEventListener('keydown', e => { 
+    keys[e.code] = true; 
+    if (e.key === 'Shift') { document.getElementById('admin-console').style.display = 'block'; document.getElementById('admin-input').focus(); }
 });
-window.addEventListener('keyup', e => {
-    keys[e.code] = false;
+window.addEventListener('keyup', e => { 
+    keys[e.code] = false; 
     if (['KeyW', 'Space', 'ArrowUp'].includes(e.code)) keys.jumpPressed = false;
 });
-adminInput.addEventListener('keydown', e => {
+
+document.getElementById('admin-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') {
-        if (adminInput.value === "101165") {
+        if (e.target.value === '101165') {
             isAdminUnlocked = true;
-            adminToggleBtn.style.display = "block";
+            document.getElementById('admin-toggle-btn').classList.remove('hidden');
         }
-        adminConsole.style.display = "none"; adminInput.value = "";
+        document.getElementById('admin-console').style.display = 'none'; e.target.value = '';
     }
 });
 
