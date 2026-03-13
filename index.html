@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Parkour: Progression</title>
+    <title>Neon Parkour: Titan Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
     <style>
@@ -13,35 +13,35 @@
         .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; }
         .panel {
             position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-            background: rgba(5,5,10,0.98); border: 2px solid #00f2ff; padding: 25px;
-            color: #00f2ff; display: none; pointer-events: auto; width: 420px;
+            background: rgba(5,5,15,0.98); border: 2px solid #00f2ff; padding: 25px;
+            color: #00f2ff; display: none; pointer-events: auto; width: 450px;
             border-radius: 12px; box-shadow: 0 0 60px rgba(0, 242, 255, 0.4); z-index: 1000;
         }
-        .gui-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; width: 100%; padding: 12px; margin-bottom: 8px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
-        .gui-btn:hover:not(:disabled) { background: #00f2ff; color: #000; box-shadow: 0 0 20px #00f2ff; }
-        .gui-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #444; color: #444; }
-        #admin-console { position: absolute; bottom: 40px; left: 20px; width: 400px; background: rgba(0,0,0,0.8); border: 1px solid #333; padding: 10px; pointer-events: auto; display: none; }
+        .gui-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; width: 100%; padding: 10px; margin-bottom: 5px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
+        .gui-btn:hover:not(:disabled) { background: #00f2ff; color: #000; }
+        .gui-btn:disabled { opacity: 0.2; }
+        #admin-console { position: absolute; bottom: 40px; left: 20px; width: 400px; background: rgba(0,0,0,0.9); border: 1px solid #00f2ff; padding: 10px; pointer-events: auto; display: none; }
         #admin-input { background: transparent; border: none; color: #00f2ff; width: 100%; outline: none; font-size: 16px; }
-        #broadcast-msg { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #00f2ff; font-family: 'Orbitron'; font-size: 3rem; opacity: 0; transition: 0.6s; pointer-events: none; text-align: center; font-weight: 900; width: 100%; text-shadow: 0 0 30px #00f2ff; }
+        #broadcast-msg { position: absolute; top: 20%; left: 50%; transform: translateX(-50%); color: #00f2ff; font-family: 'Orbitron'; font-size: 3rem; opacity: 0; transition: 0.6s; pointer-events: none; text-align: center; font-weight: 900; width: 100%; }
     </style>
 </head>
 <body>
 
     <canvas id="canvas"></canvas>
-    <div id="broadcast-msg">SYSTEM BROADCAST</div>
+    <div id="broadcast-msg">SYSTEM ALERT</div>
 
     <div id="ui">
         <div id="hud" class="hidden">
             <div class="absolute top-6 left-6 hud-text">
                 <div id="world-tag" class="text-cyan-400 font-bold mb-1 uppercase tracking-widest">SECTOR: 01</div>
-                <div class="flex gap-6">
+                <div class="flex gap-8">
                     <div><span class="text-[10px] block opacity-50">CREDITS</span><span id="coin-count" class="text-2xl font-black text-yellow-400">0</span></div>
-                    <div><span class="text-[10px] block opacity-50">GOAL</span><span id="dist-tag" class="text-2xl font-black text-white">0/3000m</span></div>
+                    <div><span class="text-[10px] block opacity-50">PROGRESS</span><span id="dist-tag" class="text-2xl font-black text-white">0/5000m</span></div>
                 </div>
             </div>
             <div class="absolute top-6 right-6 flex gap-2">
                 <button class="bg-white/10 text-white p-2 text-xs font-bold pointer-events-auto border border-white/20" onclick="updateMenu(); togglePanel('level-menu')">LEVELS</button>
-                <button id="master-btn" class="hidden bg-red-600 text-white p-2 text-xs font-bold pointer-events-auto" onclick="togglePanel('admin-gui')">MASTER GUI</button>
+                <button id="master-btn" class="hidden bg-red-600 text-white p-2 text-xs font-bold pointer-events-auto" onclick="togglePanel('admin-gui')">MASTER OVERRIDE</button>
             </div>
         </div>
 
@@ -52,159 +52,85 @@
         </div>
 
         <div id="admin-gui" class="panel">
-            <h2 class="text-center mb-4 text-red-500 font-bold">MASTER OVERRIDE</h2>
+            <h2 class="text-center mb-4 text-red-500 font-bold">TITAN ADMIN PANEL</h2>
             <div class="grid grid-cols-2 gap-2">
-                <button class="gui-btn" onclick="runCmd('/god')">Invincibility</button>
-                <button class="gui-btn" onclick="runCmd('/flight')">Infinite Jetpack</button>
-                <button class="gui-btn" onclick="runCmd('/coins 1t')">Add 1T Coins</button>
+                <button class="gui-btn" onclick="runCmd('/god')">Toggle God</button>
+                <button class="gui-btn" onclick="runCmd('/flight')">Toggle Jetpack</button>
                 <button class="gui-btn" onclick="runCmd('/unlock')">Unlock All Worlds</button>
+                <button class="gui-btn" onclick="runCmd('/size 3')">Giant Mode</button>
+                <button class="gui-btn" onclick="runCmd('/size 0.5')">Tiny Mode</button>
+                <button class="gui-btn" onclick="runCmd('/lowgrav')">Low Gravity</button>
+                <button class="gui-btn" onclick="runCmd('/coins 1t')">1T Credits</button>
+                <button class="gui-btn" onclick="runCmd('/lives 999')">999 Lives</button>
             </div>
-            <button class="text-white text-center w-full mt-4 text-xs" onclick="togglePanel('admin-gui')">MINIMIZE</button>
+            <button class="text-white text-center w-full mt-4 text-xs" onclick="togglePanel('admin-gui')">EXIT</button>
         </div>
 
-        <div id="admin-console"><input id="admin-input" type="text" placeholder="Enter command/code..."></div>
+        <div id="admin-console"><input id="admin-input" type="text" placeholder="Enter Command or Code 101165..."></div>
 
         <div id="menu" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center pointer-events-auto">
-            <h1 class="text-8xl font-black text-white mb-2 hud-text italic tracking-tighter">NEON</h1>
-            <h1 class="text-2xl font-bold text-cyan-400 mb-12 tracking-[0.5em] uppercase">Progression System</h1>
-            <button class="bg-cyan-500 text-black px-20 py-5 font-black text-2xl hover:bg-white transition-all shadow-[0_0_40px_rgba(0,242,255,0.5)]" onclick="startGame()">INITIALIZE SECTOR 1</button>
-            <p class="text-white/30 mt-8 text-[10px]">REACH 3000M TO UNLOCK NEXT LEVEL</p>
+            <h1 class="text-9xl font-black text-white mb-2 hud-text italic tracking-tighter">NEON</h1>
+            <h1 class="text-2xl font-bold text-cyan-400 mb-12 tracking-[0.6em] uppercase">Stickman Titan</h1>
+            <button class="bg-cyan-500 text-black px-24 py-6 font-black text-3xl hover:bg-white transition-all" onclick="startGame()">RUN</button>
+            <p class="text-white/30 mt-8 text-[10px]">SHIFT FOR CONSOLE | GOAL: 5000M</p>
         </div>
     </div>
 
 <script>
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let state = 'MENU', player, platforms = [], obstacles = [], coins = [], checkpoints = [];
-let camera = { x: 0, y: 0 }, keys = {}, gameTick = 0, lastCheckpoint = { x: 0, y: 400 };
-let gravityDir = 1, runSpeed = 1.8, jumpPower = 18.5;
+let state = 'MENU', player, platforms = [], obstacles = [], coins = [], powerups = [];
+let camera = { x: 0, y: 0 }, keys = {}, gameTick = 0;
+let gravityDir = 1, runSpeed = 2, jumpPower = 19, currentGravity = 0.8;
 
 const worldStyles = {
-    1: { color: '#00f2ff', name: "Neon Prime", unlocked: true },
-    2: { color: '#ff00ff', name: "The Void", unlocked: false },
-    3: { color: '#ff4400', name: "Magma Core", unlocked: false },
-    4: { color: '#00ff44', name: "Matrix Glitch", unlocked: false }
+    1: { color: '#00f2ff', name: "Neon District", unlocked: true },
+    2: { color: '#ff00ff', name: "Pink Void", unlocked: false },
+    3: { color: '#ff4400', name: "Lava Core", unlocked: false },
+    4: { color: '#00ff44', name: "Matrix", unlocked: false },
+    5: { color: '#ffffff', name: "Hyperlight", unlocked: false }
 };
 let currentSector = 1;
-let progress = { coins: 0, lives: 3, isGod: false, infiniteJet: false };
+let progress = { coins: 0, lives: 3, isGod: false, infiniteJet: false, pSize: 1, trailCol: '#00f2ff' };
 
 class Player {
-    constructor() { this.reset(); this.trail = []; }
+    constructor() { this.reset(); this.trail = []; this.rot = 0; }
     reset(px = 0, py = 400) {
         this.x = px; this.y = py; this.vx = 0; this.vy = 0;
-        this.w = 20; this.h = 50; this.grounded = false; this.rot = 0;
+        this.w = 20; this.h = 50; this.grounded = false; this.flipRot = 0;
     }
     update() {
         let move = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
         this.vx += move * runSpeed; this.vx *= 0.85;
-        if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp'])) {
-            if (this.grounded && !keys.jumpPressed) { this.vy = -jumpPower * gravityDir; this.grounded = false; keys.jumpPressed = true; }
-            else if (progress.infiniteJet) { this.vy -= 1.3 * gravityDir; }
+
+        if (keys['KeyW'] || keys['Space'] || keys['ArrowUp']) {
+            if (this.grounded && !keys.jumpPressed) {
+                this.vy = -jumpPower * gravityDir;
+                this.grounded = false; keys.jumpPressed = true;
+                this.flipRot = 0; // Reset flip
+            } else if (progress.infiniteJet) { this.vy -= 1.4 * gravityDir; }
         }
-        this.vy += 0.8 * gravityDir; this.x += this.vx; this.y += this.vy;
-        if (!this.grounded) this.rot += 0.15; else this.rot = 0;
+
+        if (!this.grounded) {
+            this.flipRot += 0.22; // 360 Flip speed
+            if (this.flipRot > Math.PI * 2) this.flipRot = Math.PI * 2;
+        } else { this.flipRot = 0; }
+
+        this.vy += currentGravity * gravityDir;
+        this.x += this.vx; this.y += this.vy;
+
         this.grounded = false;
         platforms.forEach(p => {
-            if (this.x + this.w > p.x && this.x < p.x + p.w) {
-                if (gravityDir === 1 && this.vy >= 0 && this.y + this.h >= p.y && this.y + this.h <= p.y + 30) { this.y = p.y - this.h; this.vy = 0; this.grounded = true; }
-                else if (gravityDir === -1 && this.vy <= 0 && this.y <= p.y + p.h && this.y >= p.y + p.h - 30) { this.y = p.y + p.h; this.vy = 0; this.grounded = true; }
+            if (this.x + (this.w*progress.pSize) > p.x && this.x < p.x + p.w) {
+                if (gravityDir === 1 && this.vy >= 0 && this.y + (this.h*progress.pSize) >= p.y && this.y + (this.h*progress.pSize) <= p.y + 30) {
+                    this.y = p.y - (this.h*progress.pSize); this.vy = 0; this.grounded = true;
+                }
             }
         });
-        // Check for level end portal
-        if (this.x >= 3000) {
-            if (currentSector < 4) {
-                worldStyles[currentSector + 1].unlocked = true;
-                broadcast("SECTOR " + currentSector + " COMPLETE! NEXT UNLOCKED");
-                this.x = 0; loadWorld(currentSector + 1);
-            } else {
-                broadcast("ALL SECTORS COMPLETE - GOD STATUS ACHIEVED");
-            }
-        }
-        document.getElementById('coin-count').innerText = progress.coins.toLocaleString();
-        document.getElementById('dist-tag').innerText = Math.floor(this.x) + "/3000m";
-    }
-    draw() {
-        ctx.fillStyle = worldStyles[currentSector].color;
-        ctx.fillRect(this.x - camera.x, this.y - camera.y, 20, 50);
-    }
-}
 
-function broadcast(msg) {
-    const b = document.getElementById('broadcast-msg');
-    b.innerText = msg; b.style.opacity = 1;
-    setTimeout(() => b.style.opacity = 0, 4000);
-}
-
-function updateMenu() {
-    const container = document.getElementById('level-buttons');
-    container.innerHTML = '';
-    Object.keys(worldStyles).forEach(id => {
-        const btn = document.createElement('button');
-        btn.className = 'gui-btn';
-        btn.innerText = worldStyles[id].name + (worldStyles[id].unlocked ? "" : " (LOCKED)");
-        btn.disabled = !worldStyles[id].unlocked;
-        btn.onclick = () => { loadWorld(parseInt(id)); togglePanel('level-menu', true); };
-        container.appendChild(btn);
-    });
-}
-
-function loadWorld(id) {
-    currentSector = id;
-    document.getElementById('world-tag').innerText = "SECTOR: " + worldStyles[id].name;
-    platforms = [{ x: 0, y: 500, w: 4000, h: 60 }]; // Generate platforms
-    for (let i = 0; i < 20; i++) platforms.push({x: i*200, y: 400 - (i%2*100), w: 150, h: 20});
-    player.x = 0;
-}
-
-function runCmd(cmd) {
-    if (cmd === '101165') document.getElementById('master-btn').classList.remove('hidden');
-    if (cmd === '/unlock') { Object.keys(worldStyles).forEach(k => worldStyles[k].unlocked = true); broadcast("ALL WORLDS UNLOCKED"); }
-    if (cmd === '/flight') progress.infiniteJet = !progress.infiniteJet;
-}
-
-function togglePanel(id, forceClose = false) {
-    const el = document.getElementById(id);
-    el.style.display = (forceClose || el.style.display === 'block') ? 'none' : 'block';
-}
-
-function startGame() {
-    player = new Player(); state = 'PLAY';
-    loadWorld(1);
-    document.getElementById('menu').classList.add('hidden');
-    document.getElementById('hud').classList.remove('hidden');
-}
-
-function loop() {
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (state === 'PLAY') {
-        player.update();
-        camera.x += (player.x - canvas.width/3 - camera.x) * 0.1;
-        platforms.forEach(p => {
-            ctx.fillStyle = worldStyles[currentSector].color;
-            ctx.fillRect(p.x - camera.x, p.y - camera.y, p.w, 10);
-        });
-        // Portal at the end
-        ctx.fillStyle = "#ffd700";
-        ctx.fillRect(3000 - camera.x, 0, 50, canvas.height);
-        player.draw();
-    }
-    requestAnimationFrame(loop);
-}
-
-window.addEventListener('keydown', e => { 
-    keys[e.code] = true; 
-    if (e.key === 'Shift') {
-        const console = document.getElementById('admin-console');
-        console.style.display = console.style.display === 'block' ? 'none' : 'block';
-        if(console.style.display === 'block') document.getElementById('admin-input').focus();
-    }
-});
-window.addEventListener('keyup', e => { keys[e.code] = false; if (['KeyW', 'Space', 'ArrowUp'].includes(e.code)) keys.jumpPressed = false; });
-document.getElementById('admin-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') { runCmd(e.target.value); e.target.value = ''; document.getElementById('admin-console').style.display = 'none'; }
-});
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-loop();
-</script>
-</body>
-</html>
+        if (this.x >= 5000) {
+            if (currentSector < 5) {
+                worldStyles[currentSector+1].unlocked = true;
+                broadcast("SECTOR COMPLETE! UNLOCKED " + worldStyles[currentSector+1].name);
+                loadWorld(currentSector+1);
+            } else { broadcast("ASCENDED: ALL LEVELS COMPLETE"); }
