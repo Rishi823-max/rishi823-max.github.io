@@ -1,365 +1,104 @@
-<DOCTYPE html>
-    <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title id="page-title">Neon Parkour Pro | Extreme Slide</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
-    <style>
-        body { background: #050505; margin: 0; overflow: hidden; font-family: 'JetBrains Mono', monospace; }
-        canvas { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
-        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
-        .hud-text { font-family: 'Orbitron', sans-serif; color: #fff; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
-        .menu-overlay { 
-            position: absolute; inset: 0; background: rgba(0,0,0,0.95); 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            pointer-events: auto; z-index: 100;
-        }
-        .btn {
-            background: #00f2ff; color: #000; padding: 12px 30px; border-radius: 4px;
-            font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; transition: 0.2s; border: none; margin-top: 10px;
-        }
-        .btn:hover:not(:disabled) { background: #fff; transform: scale(1.05); box-shadow: 0 0 20px #00f2ff; }
-        .btn-ghost { background: transparent; color: #00f2ff; border: 2px solid #00f2ff; margin-top: 10px; }
-        .hidden { display: none !important; }
-        .nav-grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-            gap: 15px; width: 80%; max-height: 50vh; overflow-y: auto;
-        }
-        .level-strip { display: flex; gap: 10px; overflow-x: auto; width: 80%; padding: 10px; }
-        .level-btn { min-width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; cursor: pointer; }
-        .world-card { background: #111; border: 1px solid #333; padding: 15px; cursor: pointer; border-radius: 8px; position: relative; }
-        .world-card.active { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0,242,255,0.3); }
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #00f2ff; }
-        input:checked + .slider:before { transform: translateX(24px); }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Drift Pro </title>
+    <style>
+        body { margin: 0; background: #010103; overflow: hidden; font-family: 'Courier New', monospace; color: #0ffa; }
+        canvas { display: block; touch-action: none; }
+        #ui { position: absolute; top: 1rem; left: 1rem; pointer-events: none; z-index: 5; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .cr { color: #ff2a6d; font-weight: bold; }
+    </style>
 </head>
-<body>
-
-    <canvas id="canvas"></canvas>
-
-    <div id="ui">
-        <div id="hud" class="hidden">
-            <div class="absolute top-6 left-6 hud-text">
-                <div id="world-name" class="text-xs text-cyan-400 font-bold uppercase tracking-widest">WORLD 1: NEON CITY</div>
-                <div class="flex items-end gap-4">
-                    <div>
-                        <div class="text-[10px] opacity-50">LEVEL</div>
-                        <div id="lvl-num" class="text-3xl font-black">1</div>
-                    </div>
-                    <div>
-                        <div class="text-[10px] opacity-50">DISTANCE</div>
-                        <div id="dist" class="text-3xl font-black">000m</div>
-                    </div>
-                </div>
-            </div>
-            <div class="absolute top-6 right-6 hud-text text-right flex flex-col items-end gap-2">
-                <button class="btn !p-2 !mt-0 !text-[10px] pointer-events-auto" onclick="openNav()">MENU</button>
-                <div>
-                    <div class="text-[10px] opacity-50">SPEED</div>
-                    <div id="speed" class="text-3xl font-black text-cyan-400">0%</div>
-                </div>
-                <div id="checkpoint-msg" class="text-[10px] text-green-400 font-bold opacity-0 transition-opacity duration-500">CHECKPOINT!</div>
-            </div>
-        </div>
-
-        <div id="menu" class="menu-overlay">
-            <h1 class="text-6xl font-black text-white mb-2 italic tracking-tighter hud-text">PARKOUR PRO</h1>
-            <p class="text-cyan-400 font-bold tracking-[0.2em] mb-4">SLIDE TO SURVIVE</p>
-            <button class="btn" onclick="continueGame()">Continue Journey</button>
-            <button class="btn btn-ghost" onclick="openNav()">Select Level</button>
-            
-            <div class="mt-8 flex items-center gap-3 pointer-events-auto bg-white/5 p-3 rounded-lg">
-                <span class="text-[10px] text-white/50 uppercase font-bold">Cloak Mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="cloak-toggle" onchange="toggleCloak()">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-
-        <div id="nav-screen" class="menu-overlay hidden">
-            <h2 class="text-4xl font-black text-white mb-4 hud-text uppercase">Select World</h2>
-            <div id="world-list" class="nav-grid"></div>
-            <div id="level-list" class="level-strip mt-6"></div>
-            <div class="flex gap-4 mt-8">
-                <button class="btn btn-ghost" onclick="closeNav()">Back</button>
-                <button class="btn" onclick="startGameFromNav()">Enter World</button>
-            </div>
-        </div>
-
-        <div id="win-screen" class="menu-overlay hidden">
-            <h2 class="text-5xl font-black text-cyan-400 mb-2 hud-text">LEVEL CLEAR</h2>
-            <button class="btn" onclick="nextLevel()">Next Level</button>
-        </div>
-
-        <div id="death-screen" class="menu-overlay hidden">
-            <h2 class="text-5xl font-black text-red-500 mb-2 hud-text">CRASHED</h2>
-            <button class="btn !bg-red-500" onclick="retryLevel()">Respawn</button>
-        </div>
-    </div>
+<body oncontextmenu="return false;">
+    <div id="ui"></div>
+    <canvas id="stage"></canvas>
 
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const distEl = document.getElementById('dist');
-const speedEl = document.getElementById('speed');
-const lvlEl = document.getElementById('lvl-num');
-const worldNameEl = document.getElementById('world-name');
+/** * BUILD_ID: 0x774AC
+ * ENCRYPTION: LOCAL_STORAGE_IV
+ */
+(function() {
+    const _0x = document.getElementById('stage'), $ = _0x.getContext('2d'), ui = document.getElementById('ui');
+    let w, h, cx, cy, s = 0, hs = localStorage.getItem('_nd_hs') || 0, sh = 0, gl = 0;
+    let pt = [], ob = [], active = !0, fr = 0;
+    let p = { a: 0, d: 150, r: 5, s: 0.048, td: 150 };
 
-let state = 'MENU';
-let player, platforms = [], obstacles = [];
-let camera = { x: 0, y: 0 };
-let keys = {};
+    const res = () => { w = _0x.width = innerWidth; h = _0x.height = innerHeight; cx = w/2; cy = h/2; };
+    window.onresize = res; res();
 
-let progress = { 
-    maxLevel: 1, 
-    lastWorld: 0, 
-    lastLevel: 1, 
-    lastCheckpoint: { x: 200, y: 300 },
-    cloakEnabled: false 
-};
+    let hld = !1;
+    const inp = (v) => hld = v;
+    window.onmousedown = () => inp(!0); window.onmouseup = () => inp(!1);
+    window.ontouchstart = (e) => { inp(!0); e.preventDefault(); }; window.ontouchend = () => inp(!1);
 
-const saved = localStorage.getItem('parkourProSave_v3');
-if (saved) progress = JSON.parse(saved);
+    const updateUI = () => {
+        ui.innerHTML = `LOAD: ${Math.floor(s)}%<br>BEST: ${Math.floor(hs)}%<br>STATUS: <span class="${gl>0?'cr':''}">${gl>0?'!! ERROR !!':'NOMINAL'}</span>`;
+    };
 
-let lastCheckpoint = progress.lastCheckpoint;
-let currentWorldIndex = progress.lastWorld;
-let currentLevel = progress.lastLevel;
-let navWorld = currentWorldIndex;
-let navLevel = currentLevel;
+    class Particle {
+        constructor(x, y, c) { this.x = x; this.y = y; this.v = {x:(Math.random()-.5)*15, y:(Math.random()-.5)*15}; this.l = 1; this.c = c; }
+        draw() { this.x += this.v.x; this.y += this.v.y; this.l -= 0.03; $.globalAlpha = this.l; $.fillStyle = this.c; $.fillRect(this.x, this.y, 2, 2); }
+    }
 
-const WORLDS = [
-    { name: "Neon City", bg: "#050505", accent: "#00f2ff", hazard: "#ff0055" },
-    { name: "Magma Core", bg: "#1a0500", accent: "#ff4400", hazard: "#ffff00" },
-    { name: "Deep Space", bg: "#00051a", accent: "#7700ff", hazard: "#00ffff" }
-];
+    const loop = () => {
+        if (!active) return;
+        fr++;
+        if (s > hs) { hs = s; localStorage.setItem('_nd_hs', hs); }
+        if (Math.floor(s) % 50 === 0 && Math.floor(s) !== 0 && gl === 0) { gl = 20; sh = 15; }
 
-const LEVELS_PER_WORLD = 100;
-const GRAVITY = 0.52;
-const FRICTION = 0.85;
-const MAX_RUN = 9.0;
-const JUMP_FORCE = -14.5;
+        $.save();
+        if (sh > 0) { $.translate((Math.random()-.5)*sh, (Math.random()-.5)*sh); sh *= 0.9; }
 
-function toggleCloak() {
-    progress.cloakEnabled = document.getElementById('cloak-toggle').checked;
-    saveProgress();
-    document.getElementById('page-title').innerText = progress.cloakEnabled ? "Google" : "Neon Parkour Pro";
-}
+        p.td = hld ? 85 : 215;
+        p.d += (p.td - p.d) * 0.2;
+        p.a += p.s;
 
-class Player {
-    constructor() { this.reset(); }
-    reset() {
-        this.x = lastCheckpoint.x; 
-        this.y = lastCheckpoint.y - 100;
-        this.vx = 0; this.vy = 0;
-        this.w = 24; this.h = 48;
-        this.grounded = false;
-        this.sliding = false;
-        this.distance = 0;
-        this.rot = 0;
-        this.finished = false;
-    }
+        const px = cx + Math.cos(p.a) * p.d, py = cy + Math.sin(p.a) * p.d;
 
-    update() {
-        if (this.finished) return;
+        $.fillStyle = `rgba(1, 1, 3, ${gl > 0 ? 0.4 : 0.2})`;
+        $.fillRect(-100, -100, w+200, h+200);
 
-        let inputX = (keys['KeyD'] || keys['ArrowRight'] ? 1 : 0) - (keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0);
-        if (inputX !== 0) {
-            this.vx += inputX * (this.grounded ? 0.9 : 0.6);
-        } else {
-            this.vx *= this.grounded ? FRICTION : 0.98;
-        }
+        $.strokeStyle = gl > 0 ? '#ff2a6d' : 'rgba(15, 255, 161, 0.1)';
+        [85, 215].forEach(r => { $.beginPath(); $.arc(cx, cy, r, 0, Math.PI*2); $.stroke(); });
 
-        const limit = this.sliding ? 13 : MAX_RUN;
-        this.vx = Math.max(-limit, Math.min(limit, this.vx));
+        ob.forEach((o, i) => {
+            o.a -= o.v;
+            const ox = cx + Math.cos(o.a) * o.d, oy = cy + Math.sin(o.a) * o.d;
+            $.fillStyle = '#ff2a6d';
+            $.shadowBlur = gl > 0 ? 20 : 10; $.shadowColor = '#ff2a6d';
+            $.beginPath(); $.arc(ox, oy, o.r, 0, Math.PI*2); $.fill();
 
-        // Sliding logic
-        if ((keys['KeyS'] || keys['ArrowDown']) && this.grounded) {
-            if (!this.sliding) { this.sliding = true; this.h = 16; this.y += 32; }
-        } else if (this.sliding) {
-            // Check if room to stand up
-            this.h = 48; this.y -= 32; this.sliding = false;
-        }
+            if (Math.hypot(px-ox, py-oy) < p.r + o.r) {
+                sh = 30; for(let k=0; k<50; k++) pt.push(new Particle(px, py, '#0ffa1a'));
+                active = !1; setTimeout(() => location.reload(), 1000);
+            }
+        });
 
-        this.vy += GRAVITY;
-        this.x += this.vx;
-        this.y += this.vy;
+        $.fillStyle = '#0ffa1a';
+        $.shadowBlur = 15; $.shadowColor = '#0ffa1a';
+        $.beginPath(); $.arc(px, py, p.r, 0, Math.PI*2); $.fill();
+        $.shadowBlur = 0;
 
-        this.grounded = false;
-        platforms.forEach(p => {
-            if (this.x + this.w > p.x && this.x < p.x + p.w) {
-                if (this.vy > 0 && this.y + this.h > p.y && this.y + this.h < p.y + p.h + this.vy + 2) {
-                    this.y = p.y - this.h; this.vy = 0; this.grounded = true;
-                    if (p.finish) { this.finished = true; win(); }
-                    if (p.checkpoint && !p.activated) {
-                        p.activated = true;
-                        lastCheckpoint = { x: p.x + p.w/2, y: p.y };
-                        progress.lastCheckpoint = lastCheckpoint;
-                        saveProgress();
-                        showCheckpointMsg();
-                    }
-                }
-            }
-        });
+        pt.forEach((p, i) => { p.draw(); if(p.l <= 0) pt.splice(i, 1); });
+        $.globalAlpha = 1; $.restore();
 
-        obstacles.forEach(o => {
-            if (this.x + this.w - 4 > o.x && this.x + 4 < o.x + o.w && this.y + this.h > o.y && this.y < o.y + o.h) die();
-        });
+        if (gl > 0) {
+            $.fillStyle = "rgba(255, 42, 109, 0.1)";
+            $.fillRect(0, Math.random()*h, w, 5);
+            gl--;
+        }
 
-        if ((keys['KeyW'] || keys['ArrowUp'] || keys['Space']) && this.grounded) {
-            this.vy = JUMP_FORCE; this.grounded = false;
-        }
-
-        this.distance = Math.max(this.distance, Math.floor(this.x / 10));
-        if (this.y > 1500) die();
-    }
-
-    draw() {
-        ctx.save();
-        ctx.translate(this.x + this.w/2, this.y + this.h/2);
-        if (!this.grounded) this.rot += this.vx * 0.05; else this.rot = 0;
-        ctx.rotate(this.rot);
-        ctx.shadowBlur = 15; ctx.shadowColor = WORLDS[currentWorldIndex].accent;
-        ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
-        if (this.sliding) {
-            ctx.strokeRect(-this.w/2, -this.h/2, this.w, this.h);
-        } else {
-            ctx.beginPath(); ctx.arc(0, -25, 6, 0, Math.PI*2);
-            ctx.moveTo(0, -20); ctx.lineTo(0, 0); ctx.moveTo(-10, -10); ctx.lineTo(10, -10);
-            ctx.moveTo(0, 0); ctx.lineTo(-8, 14); ctx.moveTo(0, 0); ctx.lineTo(8, 14);
-            ctx.stroke();
-        }
-        ctx.restore();
-    }
-}
-
-function showCheckpointMsg() {
-    const msg = document.getElementById('checkpoint-msg');
-    msg.style.opacity = '1';
-    setTimeout(() => msg.style.opacity = '0', 2000);
-}
-
-function saveProgress() { localStorage.setItem('parkourProSave_v3', JSON.stringify(progress)); }
-
-function startGameFromParams(wIdx, lNum, isRespawn = false) {
-    currentWorldIndex = wIdx; currentLevel = lNum;
-    if (!isRespawn) {
-        lastCheckpoint = (progress.lastLevel === currentLevel && progress.lastWorld === currentWorldIndex) ? progress.lastCheckpoint : { x: 200, y: 500 };
-        platforms = [{ x: 0, y: 500, w: 800, h: 50 }];
-        obstacles = [];
-        generateLevel();
-    }
-    player = new Player();
-    state = 'PLAY';
-    document.querySelectorAll('.menu-overlay').forEach(m => m.classList.add('hidden'));
-    document.getElementById('hud').classList.remove('hidden');
-    lvlEl.innerText = currentLevel;
-    document.body.style.background = WORLDS[currentWorldIndex].bg;
-    worldNameEl.innerText = `WORLD ${currentWorldIndex + 1}: ${WORLDS[currentWorldIndex].name}`;
-}
-
-function generateLevel() {
-    let lastX = 800, lastY = 500;
-    
-    // Add a specific checkpoint at 7000 units (700m)
-    platforms.push({ x: 6900, y: 450, w: 400, h: 40, checkpoint: true, activated: false });
-
-    for (let i = 0; i < 40; i++) {
-        let gap = 180 + Math.random() * 200;
-        let pW = 200 + Math.random() * 300;
-        let nY = Math.max(200, Math.min(800, lastY + (Math.random() - 0.5) * 180));
-        
-        // Avoid placing platforms right on top of our manual checkpoint
-        if (Math.abs(lastX + gap - 7000) < 500) {
-            lastX += 800;
-        }
-
-        const isCP = i === 20;
-        platforms.push({ x: lastX + gap, y: nY, w: pW, h: 40, checkpoint: isCP, activated: false });
-        
-        if (!isCP && Math.random() < 0.4) {
-            obstacles.push({ 
-                type: 'lowBeam', 
-                x: lastX + gap + pW/2 - 25, 
-                y: nY - 350, 
-                w: 50, 
-                h: 325 
-            });
-        }
-        lastX += gap + pW; lastY = nY;
-    }
-    platforms.push({ x: lastX + 300, y: lastY, w: 1000, h: 100, finish: true });
-}
-
-function die() { state = 'DEATH'; document.getElementById('death-screen').classList.remove('hidden'); }
-function win() { state = 'WIN'; document.getElementById('win-screen').classList.remove('hidden'); }
-function nextLevel() { currentLevel++; if (currentLevel > LEVELS_PER_WORLD) { currentLevel = 1; currentWorldIndex++; } startGameFromParams(currentWorldIndex, currentLevel, false); }
-function retryLevel() { startGameFromParams(currentWorldIndex, currentLevel, true); }
-function continueGame() { startGameFromParams(progress.lastWorld, progress.lastLevel, false); }
-function openNav() { state = 'NAV'; document.getElementById('menu').classList.add('hidden'); document.getElementById('nav-screen').classList.remove('hidden'); renderWorldNav(); }
-function closeNav() { state = 'MENU'; document.getElementById('nav-screen').classList.add('hidden'); document.getElementById('menu').classList.remove('hidden'); }
-function startGameFromNav() { startGameFromParams(navWorld, navLevel, false); }
-
-function renderWorldNav() {
-    const list = document.getElementById('world-list'); list.innerHTML = '';
-    WORLDS.forEach((w, i) => {
-        const card = document.createElement('div');
-        card.className = `world-card ${i === navWorld ? 'active' : ''}`;
-        card.innerHTML = `<div class="font-bold text-white">${w.name}</div>`;
-        card.onclick = () => { navWorld = i; renderWorldNav(); };
-        list.appendChild(card);
-    });
-    const lList = document.getElementById('level-list'); lList.innerHTML = '';
-    for (let i = 1; i <= 20; i++) {
-        const b = document.createElement('div'); b.className = `level-btn ${i === navLevel ? '!bg-cyan-400' : ''}`;
-        b.innerText = i; b.onclick = () => { navLevel = i; renderLevelNav(); };
-        lList.appendChild(b);
-    }
-}
-
-function loop() {
-    const world = WORLDS[currentWorldIndex] || WORLDS[0];
-    if (state === 'PLAY') {
-        player.update();
-        camera.x += (player.x - canvas.width / 3 - camera.x) * 0.12;
-        camera.y += (player.y - canvas.height / 2 - camera.y) * 0.12;
-        distEl.innerText = player.distance.toString().padStart(3, '0') + "m";
-        speedEl.innerText = Math.floor((Math.abs(player.vx) / MAX_RUN) * 100) + "%";
-    }
-    ctx.fillStyle = world.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.translate(-camera.x, -camera.y);
-    platforms.forEach(p => {
-        ctx.fillStyle = p.finish ? "#4ade80" : (p.checkpoint ? (p.activated ? "#fff" : "#fbbf24") : world.accent);
-        if (p.checkpoint) {
-            ctx.shadowBlur = 20; ctx.shadowColor = p.activated ? "#fff" : "#fbbf24";
-        } else {
-            ctx.shadowBlur = 0;
-        }
-        ctx.fillRect(p.x, p.y, p.w, 10);
-        ctx.fillStyle = '#111'; ctx.fillRect(p.x, p.y + 10, p.w, p.h - 10);
-    });
-    obstacles.forEach(o => {
-        ctx.shadowBlur = 20; ctx.shadowColor = world.hazard; ctx.fillStyle = world.hazard;
-        ctx.fillRect(o.x, o.y, o.w, o.h);
-        ctx.fillStyle = "#fff"; ctx.fillRect(o.x, o.y + o.h - 2, o.w, 2);
-    });
-    if (state === 'PLAY') player.draw();
-    ctx.restore();
-    requestAnimationFrame(loop);
-}
-
-window.addEventListener('keydown', e => keys[e.code] = true);
-window.addEventListener('keyup', e => keys[e.code] = false);
-window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-loop();
+        s += 0.08;
+        if (fr % 10 === 0) updateUI();
+        if (Math.random() < 0.05 + (s/5000)) ob.push({ a: Math.random()*Math.PI*2, d: Math.random()>0.5?85:215, r: 8+Math.random()*12, v: 0.03 + (s*0.0001) });
+        if (ob.length > 30) ob.shift();
+        
+        requestAnimationFrame(loop);
+    };
+    loop();
+})();
 </script>
 </body>
 </html>
