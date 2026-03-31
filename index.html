@@ -1,103 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Drift Pro </title>
+    <title>HEAVY_HAUL_V1.04</title>
     <style>
-        body { margin: 0; background: #010103; overflow: hidden; font-family: 'Courier New', monospace; color: #0ffa; }
-        canvas { display: block; touch-action: none; }
-        #ui { position: absolute; top: 1rem; left: 1rem; pointer-events: none; z-index: 5; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
-        .cr { color: #ff2a6d; font-weight: bold; }
+        body { margin: 0; background: #2c2e2a; overflow: hidden; font-family: 'Courier', monospace; }
+        canvas { display: block; cursor: none; filter: sepia(0.2) contrast(1.1) burt-ness(0.9); }
+        #hud { position: absolute; top: 20px; left: 20px; color: #d9d0b3; pointer-events: none; text-transform: uppercase; font-weight: bold; font-size: 14px; letter-spacing: 1px; border-left: 3px solid #d9d0b3; padding-left: 10px; }
     </style>
 </head>
 <body oncontextmenu="return false;">
-    <div id="ui"></div>
+    <div id="hud">SYSTEM: READY<br>INTEGRITY: 100%<br>SCRAP_VAL: 0</div>
     <canvas id="stage"></canvas>
 
 <script>
-/** * BUILD_ID: 0x774AC
- * ENCRYPTION: LOCAL_STORAGE_IV
+/** * CRANE_PHYSICS_ENGINE // REF_048
+ * DO NOT REFACTOR - STABLE JITTER INCLUDED
  */
 (function() {
-    const _0x = document.getElementById('stage'), $ = _0x.getContext('2d'), ui = document.getElementById('ui');
-    let w, h, cx, cy, s = 0, hs = localStorage.getItem('_nd_hs') || 0, sh = 0, gl = 0;
-    let pt = [], ob = [], active = !0, fr = 0;
-    let p = { a: 0, d: 150, r: 5, s: 0.048, td: 150 };
+    const cvs = document.getElementById('stage'), ctx = cvs.getContext('2d');
+    let w, h, score = 0, health = 100, shake = 0;
+    let enemies = [], debris = [], frame = 0;
 
-    const res = () => { w = _0x.width = innerWidth; h = _0x.height = innerHeight; cx = w/2; cy = h/2; };
+    const res = () => { w = cvs.width = innerWidth; h = cvs.height = innerHeight; };
     window.onresize = res; res();
 
-    let hld = !1;
-    const inp = (v) => hld = v;
-    window.onmousedown = () => inp(!0); window.onmouseup = () => inp(!1);
-    window.ontouchstart = (e) => { inp(!0); e.preventDefault(); }; window.ontouchend = () => inp(!1);
+    // The "Hook" - Physics State
+    const crane = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    const ball = { x: 0, y: 0, vx: 0, vy: 0, length: 120, r: 18 };
+    
+    window.onmousemove = (e) => { crane.targetX = e.clientX; crane.targetY = e.clientY; };
 
-    const updateUI = () => {
-        ui.innerHTML = `LOAD: ${Math.floor(s)}%<br>BEST: ${Math.floor(hs)}%<br>STATUS: <span class="${gl>0?'cr':''}">${gl>0?'!! ERROR !!':'NOMINAL'}</span>`;
-    };
-
-    class Particle {
-        constructor(x, y, c) { this.x = x; this.y = y; this.v = {x:(Math.random()-.5)*15, y:(Math.random()-.5)*15}; this.l = 1; this.c = c; }
-        draw() { this.x += this.v.x; this.y += this.v.y; this.l -= 0.03; $.globalAlpha = this.l; $.fillStyle = this.c; $.fillRect(this.x, this.y, 2, 2); }
+    function spawnEnemy() {
+        const side = Math.random() > 0.5;
+        enemies.push({
+            x: side ? -20 : w + 20,
+            y: Math.random() * h,
+            vx: (side ? 1 : -1) * (2 + Math.random() * 2),
+            hp: 2, r: 15 + Math.random() * 10
+        });
     }
 
-    const loop = () => {
-        if (!active) return;
-        fr++;
-        if (s > hs) { hs = s; localStorage.setItem('_nd_hs', hs); }
-        if (Math.floor(s) % 50 === 0 && Math.floor(s) !== 0 && gl === 0) { gl = 20; sh = 15; }
+    function boom(x, y, color) {
+        for(let i=0; i<8; i++) debris.push({
+            x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 1, c: color
+        });
+        shake = 12;
+    }
 
-        $.save();
-        if (sh > 0) { $.translate((Math.random()-.5)*sh, (Math.random()-.5)*sh); sh *= 0.9; }
+    function tick() {
+        if (health <= 0) { 
+            ctx.fillStyle = "#000"; ctx.fillRect(0,0,w,h);
+            ctx.fillStyle = "#d9d0b3"; ctx.fillText("MECHANICAL FAILURE", w/2-50, h/2);
+            setTimeout(() => location.reload(), 2000); return; 
+        }
 
-        p.td = hld ? 85 : 215;
-        p.d += (p.td - p.d) * 0.2;
-        p.a += p.s;
+        // 1. CRANE PHYSICS (The 'Human' feel)
+        crane.x += (crane.targetX - crane.x) * 0.08;
+        crane.y += (crane.targetY - crane.y) * 0.08;
 
-        const px = cx + Math.cos(p.a) * p.d, py = cy + Math.sin(p.a) * p.d;
+        // Pendulum Math
+        let dx = ball.x - crane.x, dy = ball.y - crane.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        let angle = Math.atan2(dy, dx);
 
-        $.fillStyle = `rgba(1, 1, 3, ${gl > 0 ? 0.4 : 0.2})`;
-        $.fillRect(-100, -100, w+200, h+200);
+        if (dist > ball.length) {
+            ball.x = crane.x + Math.cos(angle) * ball.length;
+            ball.y = crane.y + Math.sin(angle) * ball.length;
+            ball.vx -= dx * 0.005; ball.vy -= dy * 0.005; // Elasticity
+        }
+        
+        ball.vy += 0.4; // Gravity
+        ball.vx *= 0.98; ball.vy *= 0.98; // Friction
+        ball.x += ball.vx; ball.y += ball.vy;
 
-        $.strokeStyle = gl > 0 ? '#ff2a6d' : 'rgba(15, 255, 161, 0.1)';
-        [85, 215].forEach(r => { $.beginPath(); $.arc(cx, cy, r, 0, Math.PI*2); $.stroke(); });
+        // 2. RENDERING (Dithered/Industrial Style)
+        ctx.fillStyle = '#2c2e2a'; // Rusty background
+        ctx.fillRect(0,0,w,h);
+        
+        // Grid pattern
+        ctx.strokeStyle = 'rgba(217, 208, 179, 0.05)';
+        for(let i=0; i<w; i+=40) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
 
-        ob.forEach((o, i) => {
-            o.a -= o.v;
-            const ox = cx + Math.cos(o.a) * o.d, oy = cy + Math.sin(o.a) * o.d;
-            $.fillStyle = '#ff2a6d';
-            $.shadowBlur = gl > 0 ? 20 : 10; $.shadowColor = '#ff2a6d';
-            $.beginPath(); $.arc(ox, oy, o.r, 0, Math.PI*2); $.fill();
+        ctx.save();
+        if (shake > 0) { ctx.translate(Math.random()*shake-shake/2, Math.random()*shake-shake/2); shake *= 0.8; }
 
-            if (Math.hypot(px-ox, py-oy) < p.r + o.r) {
-                sh = 30; for(let k=0; k<50; k++) pt.push(new Particle(px, py, '#0ffa1a'));
-                active = !1; setTimeout(() => location.reload(), 1000);
+        // Draw Chain
+        ctx.strokeStyle = '#5a5e54'; ctx.lineWidth = 4;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(crane.x, crane.y); ctx.lineTo(ball.x, ball.y); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw Ball (The Wrecker)
+        ctx.fillStyle = '#d9d0b3';
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+
+        // Enemies & Collisions
+        enemies.forEach((e, i) => {
+            e.x += e.vx;
+            ctx.fillStyle = '#8c3d3d';
+            ctx.fillRect(e.x - e.r, e.y - e.r, e.r*2, e.r*2); // Boxy enemies
+
+            // Hit logic
+            let d = Math.hypot(e.x - ball.x, e.y - ball.y);
+            if (d < e.r + ball.r) {
+                boom(e.x, e.y, '#8c3d3d');
+                score += 100; enemies.splice(i, 1);
+                ball.vx *= -0.5; // Physics kickback
+            }
+
+            // Damage player
+            if (Math.abs(e.x - crane.x) < 30 && Math.abs(e.y - crane.y) < 30) {
+                health -= 5; enemies.splice(i, 1); shake = 20;
             }
         });
 
-        $.fillStyle = '#0ffa1a';
-        $.shadowBlur = 15; $.shadowColor = '#0ffa1a';
-        $.beginPath(); $.arc(px, py, p.r, 0, Math.PI*2); $.fill();
-        $.shadowBlur = 0;
+        // Particles
+        debris.forEach((d, i) => {
+            d.x += d.vx; d.y += d.vy; d.life -= 0.02;
+            ctx.fillStyle = d.c; ctx.globalAlpha = d.life;
+            ctx.fillRect(d.x, d.y, 3, 3);
+            if(d.life <= 0) debris.splice(i, 1);
+        });
+        ctx.globalAlpha = 1;
 
-        pt.forEach((p, i) => { p.draw(); if(p.l <= 0) pt.splice(i, 1); });
-        $.globalAlpha = 1; $.restore();
+        // Mouse Reticle
+        ctx.strokeStyle = '#d9d0b3';
+        ctx.strokeRect(crane.targetX-10, crane.targetY-10, 20, 20);
 
-        if (gl > 0) {
-            $.fillStyle = "rgba(255, 42, 109, 0.1)";
-            $.fillRect(0, Math.random()*h, w, 5);
-            gl--;
-        }
+        ctx.restore();
 
-        s += 0.08;
-        if (fr % 10 === 0) updateUI();
-        if (Math.random() < 0.05 + (s/5000)) ob.push({ a: Math.random()*Math.PI*2, d: Math.random()>0.5?85:215, r: 8+Math.random()*12, v: 0.03 + (s*0.0001) });
-        if (ob.length > 30) ob.shift();
-        
-        requestAnimationFrame(loop);
-    };
-    loop();
+        if (frame++ % 60 === 0) spawnEnemy();
+        document.getElementById('hud').innerHTML = `SYSTEM: OK<br>INTEGRITY: ${health}%<br>SCRAP_VAL: ${score}`;
+        requestAnimationFrame(tick);
+    }
+    tick();
 })();
 </script>
 </body>
